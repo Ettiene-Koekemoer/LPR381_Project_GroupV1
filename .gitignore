@@ -50,3 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Ignore other common cache directories or files
+*.cache/
+*.log
