@@ -1,0 +1,9 @@
+Revised Primal Simplex Algorithm Output:
+B: 2, 3
+N: 0, 1
+A:
+     3,000     2,000
+     4,000     1,000
+cB: 0, 0
+cN: 5, 4
+b: 10, 8
