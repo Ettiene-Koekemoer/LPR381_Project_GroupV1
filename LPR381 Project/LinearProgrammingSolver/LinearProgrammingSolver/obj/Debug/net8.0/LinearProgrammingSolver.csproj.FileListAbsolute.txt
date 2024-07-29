@@ -12,3 +12,18 @@ T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.pdb
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.genruntimeconfig.cache
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\ref\LinearProgrammingSolver.dll
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.exe
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.deps.json
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.runtimeconfig.json
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.dll
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.pdb
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.AssemblyInfoInputs.cache
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.AssemblyInfo.cs
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.csproj.CoreCompileInputs.cache
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.sourcelink.json
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.dll
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\refint\LinearProgrammingSolver.dll
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.pdb
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.genruntimeconfig.cache
+c:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\ref\LinearProgrammingSolver.dll
