@@ -23,6 +23,26 @@ namespace LinearProgrammingSolver
             SignRestrictions = new List<string>();
         }
 
+        // ->LO 2024/08/05 Added new LPRModel
+        public LinearProgrammingModel(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        {
+            ObjectiveCoefficients = new List<double>(cN);
+            Constraints = new List<List<double>>();
+            for (int i = 0; i < A.GetLength(0); i++)
+            {
+                var row = new List<double>();
+                for (int j = 0; j < A.GetLength(1); j++)
+                {
+                    row.Add(A[i, j]);
+                }
+                Constraints.Add(row);
+            }
+            ConstraintOperators = new List<string>(); 
+            RightHandSides = new List<double>(b);
+            SignRestrictions = new List<string>(); 
+        }
+        //<-
+
         public void ParseInputFile(string filePath)
         {
             var lines = File.ReadAllLines(filePath);

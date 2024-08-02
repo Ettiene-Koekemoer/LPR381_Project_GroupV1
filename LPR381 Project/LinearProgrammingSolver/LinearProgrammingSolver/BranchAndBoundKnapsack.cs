@@ -27,27 +27,30 @@ namespace LinearProgrammingSolver
                 var currentNode = nodes[0];
                 nodes.RemoveAt(0);
 
-                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel()); // Assuming Solve method returns a similar tuple for sub-problems
+                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel(currentNode.B, currentNode.N, currentNode.A, currentNode.cB, currentNode.cN, currentNode.b)); // Pass current node's data to solve
                 if (currentResult == null)
                     continue;
 
-                if (IsIntegerSolution(currentResult.Value.b))
+                var (curB, curN, curA, curCB, curCN, curBVal) = currentResult.Value;
+
+                if (IsIntegerSolution(curBVal))
                 {
-                    if (currentResult.Value.cB[currentResult.Value.cB.Length - 1] > bestValue)
+                    double currentObjectiveValue = CalculateObjectiveValue(curB, curCB);
+                    if (currentObjectiveValue > bestValue)
                     {
-                        bestValue = currentResult.Value.cB[currentResult.Value.cB.Length - 1];
-                        bestNode = currentNode;
+                        bestValue = currentObjectiveValue;
+                        bestNode = new Node(curB, curN, curA, curCB, curCN, curBVal);
                     }
                 }
                 else
                 {
-                    var (leftNode, rightNode) = Branch(currentNode);
+                    var (leftNode, rightNode) = Branch(new Node(curB, curN, curA, curCB, curCN, curBVal));
                     nodes.Add(leftNode);
                     nodes.Add(rightNode);
                 }
             }
 
-            WriteOutput(bestNode);
+            WriteOutput(bestNode, bestValue);
         }
 
         private static bool IsIntegerSolution(double[] solution)
@@ -129,12 +132,25 @@ namespace LinearProgrammingSolver
             // Implement tableau display logic
         }
 
-        private static void WriteOutput(Node bestNode)
+        private static double CalculateObjectiveValue(List<int> B, double[] cB)
+        {
+            double value = 0;
+            for (int i = 0; i < B.Count; i++)
+            {
+                value += cB[i];
+            }
+            return value;
+        }
+
+        private static void WriteOutput(Node bestNode, double bestValue)
         {
             string outputFilePath = "output_knapsack.txt";
             using (var writer = new System.IO.StreamWriter(outputFilePath))
             {
                 // Write the best node's tableau and objective value
+                writer.WriteLine($"Best Objective Value: {bestValue}");
+                writer.WriteLine("Best Node Tableau:");
+                DisplayTableau(bestNode.B, bestNode.N, bestNode.A, bestNode.cB, bestNode.cN, bestNode.b);
             }
             Console.WriteLine($"Results written to {outputFilePath}");
         }

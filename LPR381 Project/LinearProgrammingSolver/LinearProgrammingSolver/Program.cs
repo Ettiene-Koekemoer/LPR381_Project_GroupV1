@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 
 namespace LinearProgrammingSolver
 {
@@ -16,7 +18,7 @@ namespace LinearProgrammingSolver
 
             while (true)
             {
-                Console.WriteLine("1. Load Model from File");
+                Console.WriteLine("1. Load Model");
                 Console.WriteLine("2. Select Algorithm");
                 Console.WriteLine("3. Perform Sensitivity Analysis");
                 Console.WriteLine("4. Exit");
@@ -51,13 +53,27 @@ namespace LinearProgrammingSolver
 
         static LinearProgrammingModel LoadModel()
         {
-            Console.WriteLine("Enter the path to the input file:");
-            var filePath = Console.ReadLine();
+            const string basePath = "C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/Models";
 
             try
             {
-                if (System.IO.File.Exists(filePath))
+                var files = Directory.GetFiles(basePath, "*.txt");
+                if (files.Length == 0)
                 {
+                    Console.WriteLine("No model files found in the directory.");
+                    return null;
+                }
+
+                Console.WriteLine("Available models:");
+                for (int i = 0; i < files.Length; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {Path.GetFileName(files[i])}");
+                }
+
+                Console.WriteLine("Enter the number of the model you want to load:");
+                if (int.TryParse(Console.ReadLine(), out int fileIndex) && fileIndex > 0 && fileIndex <= files.Length)
+                {
+                    var filePath = files[fileIndex - 1];
                     var model = new LinearProgrammingModel();
                     model.ParseInputFile(filePath);
                     Console.WriteLine("Model loaded successfully.");
@@ -65,13 +81,13 @@ namespace LinearProgrammingSolver
                 }
                 else
                 {
-                    Console.WriteLine("File not found. Please check the path and try again.");
+                    Console.WriteLine("Invalid selection. Please try again.");
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading file: {ex.Message}");
+                Console.WriteLine($"Error accessing directory: {ex.Message}");
                 return null;
             }
         }
