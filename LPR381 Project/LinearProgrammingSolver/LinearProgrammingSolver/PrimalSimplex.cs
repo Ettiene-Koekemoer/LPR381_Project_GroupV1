@@ -125,7 +125,7 @@ namespace LinearProgrammingSolver
 
         private static void WriteOutput(double[,] tableau)
         {
-            string outputFilePath = "output.txt";
+            string outputFilePath = "./LPR381 Project/Models/Output.txt";
             using (var writer = new System.IO.StreamWriter(outputFilePath))
             {
                 writer.WriteLine("Canonical Form and Simplex Iterations:");

@@ -56,3 +56,4 @@ dkms.conf
 # Ignore other common cache directories or files
 *.cache/
 *.log
+*.editorconfig
