@@ -129,8 +129,67 @@ namespace LinearProgrammingSolver
 
         private static void DisplayTableau(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
         {
-            // Implement tableau display logic
+            if (N.Count != cN.Length || B.Count != cB.Length)
+            {
+                throw new ArgumentException("Dimension mismatch between lists and arrays.");
+            }
+
+            Console.WriteLine("Objective Function:");
+            Console.Write("Max Z\t");
+            for (int i = 0; i < cN.Length; i++)
+            {
+                Console.Write($"{cN[i]}X{N[i]}\t");
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("Constraints:");
+            for (int i = 0; i < A.GetLength(0); i++)
+            {
+                for (int j = 0; j < A.GetLength(1); j++)
+                {
+                    Console.Write($"{A[i, j]}X{N[j]}\t");
+                }
+                Console.WriteLine($" <= {b[i]}");
+            }
+
+            Console.WriteLine();
+
+            Console.WriteLine("Tableau:");
+            Console.Write("Item\tIn/Out\tRemainder\t");
+            for (int i = 0; i < N.Count; i++)
+            {
+                Console.Write($"X{N[i]}\t");
+            }
+            Console.WriteLine();
+
+            for (int i = 0; i < N.Count; i++)
+            {
+                if (i >= B.Count || i >= cB.Length)
+                {
+                    Console.WriteLine("Error: Index out of range while displaying tableau.");
+                    return;
+                }
+
+                Console.Write($"X{N[i]}\t");
+                Console.Write($"{(B.Contains(N[i]) ? "1" : "0")}\t");
+                Console.Write($"{b[i]}\t");
+                for (int j = 0; j < A.GetLength(1); j++)
+                {
+                    if (i >= A.GetLength(0) || j >= A.GetLength(1))
+                    {
+                        Console.WriteLine("Error: Index out of range while displaying tableau.");
+                        return;
+                    }
+                    Console.Write($"{A[i, j]}\t");
+                }
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Branching Information:");
+            Console.WriteLine($"Branch on {N[0]}");
         }
+
 
         private static double CalculateObjectiveValue(List<int> B, double[] cB)
         {
