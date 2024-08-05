@@ -1,0 +1,79 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{394B2C10-641D-455F-8C08-8F074ED5E2C7}|LinearProgrammingSolver\\LinearProgrammingSolver.csproj|c:\\users\\user-pc\\documents\\bc\\bc year 3\\lpr 381\\project\\lpr381_project_groupv1\\lpr381 project\\linearprogrammingsolver\\linearprogrammingsolver\\cuttingplanes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{394B2C10-641D-455F-8C08-8F074ED5E2C7}|LinearProgrammingSolver\\LinearProgrammingSolver.csproj|solutionrelative:linearprogrammingsolver\\cuttingplanes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{394B2C10-641D-455F-8C08-8F074ED5E2C7}|LinearProgrammingSolver\\LinearProgrammingSolver.csproj|c:\\users\\user-pc\\documents\\bc\\bc year 3\\lpr 381\\project\\lpr381_project_groupv1\\lpr381 project\\linearprogrammingsolver\\linearprogrammingsolver\\primalsimplex.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{394B2C10-641D-455F-8C08-8F074ED5E2C7}|LinearProgrammingSolver\\LinearProgrammingSolver.csproj|solutionrelative:linearprogrammingsolver\\primalsimplex.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{394B2C10-641D-455F-8C08-8F074ED5E2C7}|LinearProgrammingSolver\\LinearProgrammingSolver.csproj|c:\\users\\user-pc\\documents\\bc\\bc year 3\\lpr 381\\project\\lpr381_project_groupv1\\lpr381 project\\linearprogrammingsolver\\linearprogrammingsolver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{394B2C10-641D-455F-8C08-8F074ED5E2C7}|LinearProgrammingSolver\\LinearProgrammingSolver.csproj|solutionrelative:linearprogrammingsolver\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\Program.cs",
+              "RelativeDocumentMoniker": "LinearProgrammingSolver\\Program.cs",
+              "ToolTip": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\Program.cs",
+              "RelativeToolTip": "LinearProgrammingSolver\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAXAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-05T07:42:27.965Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "PrimalSimplex.cs",
+              "DocumentMoniker": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\PrimalSimplex.cs",
+              "RelativeDocumentMoniker": "LinearProgrammingSolver\\PrimalSimplex.cs",
+              "ToolTip": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\PrimalSimplex.cs",
+              "RelativeToolTip": "LinearProgrammingSolver\\PrimalSimplex.cs",
+              "ViewState": "AQIAAFYAAAAAAAAAAAAIwI8AAABGAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-05T07:35:49.261Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CuttingPlanes.cs",
+              "DocumentMoniker": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\CuttingPlanes.cs",
+              "RelativeDocumentMoniker": "LinearProgrammingSolver\\CuttingPlanes.cs",
+              "ToolTip": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\CuttingPlanes.cs",
+              "RelativeToolTip": "LinearProgrammingSolver\\CuttingPlanes.cs",
+              "ViewState": "AQIAAOsAAAAAAAAAAAAAAPQAAAApAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-08-05T07:32:14.417Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

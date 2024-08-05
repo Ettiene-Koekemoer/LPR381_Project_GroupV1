@@ -19,6 +19,9 @@
       "packagesPath": "C:\\Users\\liamo\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
         "C:\\Users\\liamo\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
