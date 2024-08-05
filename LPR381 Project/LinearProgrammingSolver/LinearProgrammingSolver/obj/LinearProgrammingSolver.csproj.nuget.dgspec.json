@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "T:\\My desktop\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {}
+    "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {}
   },
   "projects": {
-    "T:\\My desktop\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {
+    "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "T:\\My desktop\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
+        "projectUniqueName": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
         "projectName": "LinearProgrammingSolver",
-        "projectPath": "T:\\My desktop\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
-        "packagesPath": "C:\\Users\\TJ\\.nuget\\packages\\",
-        "outputPath": "T:\\My desktop\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\obj\\",
+        "projectPath": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
+        "packagesPath": "C:\\Users\\User-PC\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\User-PC\\Documents\\BC\\BC Year 3\\LPR 381\\Project\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\TJ\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\User-PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [

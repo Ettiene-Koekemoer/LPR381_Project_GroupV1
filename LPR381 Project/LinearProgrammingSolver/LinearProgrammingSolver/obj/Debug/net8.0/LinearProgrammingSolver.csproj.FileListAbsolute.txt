@@ -12,3 +12,18 @@ T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.pdb
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.genruntimeconfig.cache
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\ref\LinearProgrammingSolver.dll
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.exe
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.deps.json
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.runtimeconfig.json
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.dll
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\bin\Debug\net8.0\LinearProgrammingSolver.pdb
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.AssemblyInfoInputs.cache
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.AssemblyInfo.cs
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.csproj.CoreCompileInputs.cache
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.sourcelink.json
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.dll
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\refint\LinearProgrammingSolver.dll
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.pdb
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.genruntimeconfig.cache
+C:\Users\User-PC\Documents\BC\BC Year 3\LPR 381\Project\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\ref\LinearProgrammingSolver.dll
