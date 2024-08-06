@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace LinearProgrammingSolver
 {
     public static class BranchAndBoundKnapsack
     {
+        private static List<Node> allNodes = new List<Node>();
+
         public static void Solve(LinearProgrammingModel model)
         {
             Console.WriteLine("Solving using Branch and Bound Knapsack Algorithm...");
@@ -23,6 +26,9 @@ namespace LinearProgrammingSolver
             double bestValue = double.NegativeInfinity;
             Node bestNode = null;
 
+            allNodes.Clear(); // Clear all nodes list
+            int iterationCount = 0;
+
             while (nodes.Count > 0)
             {
                 var currentNode = nodes[0];
@@ -33,6 +39,9 @@ namespace LinearProgrammingSolver
                     continue;
 
                 var (curB, curN, curA, curCB, curCN, curBVal) = currentResult.Value;
+
+                // Store the tableau for this iteration
+                allNodes.Add(new Node(curB, curN, curA, curCB, curCN, curBVal, iterationCount++));
 
                 if (IsIntegerSolution(curBVal))
                 {
@@ -58,7 +67,7 @@ namespace LinearProgrammingSolver
         {
             foreach (var value in solution)
             {
-                if (Math.Abs(value - Math.Round(value)) > 1e-6)
+                if (Math.Abs(value - Math.Round(value)) > 1e-3)
                     return false;
             }
             return true;
@@ -72,7 +81,7 @@ namespace LinearProgrammingSolver
             for (int i = 0; i < node.b.Length; i++)
             {
                 double value = node.b[i];
-                if (Math.Abs(value - Math.Round(value)) > 1e-6)
+                if (Math.Abs(value - Math.Round(value)) > 1e-3)
                 {
                     branchIndex = i;
                     fractionalValue = value;
@@ -139,19 +148,43 @@ namespace LinearProgrammingSolver
 
         private static void WriteOutput(Node bestNode, double bestValue)
         {
-            if (bestNode == null)
-            {
-                Console.WriteLine("No feasible solution found.");
-                return;
-            }
-
             string outputFilePath = "Output.txt";
             try
             {
                 using (var writer = new StreamWriter(outputFilePath))
                 {
-                    // Write the best node's objective value
-                    writer.WriteLine($"Best Objective Value: {bestValue}");
+                    writer.WriteLine("Canonical Form:");
+                    writer.WriteLine($"Objective Function: {string.Join(", ", bestNode.cB)}");
+                    writer.WriteLine("Constraints:");
+                    for (int i = 0; i < bestNode.A.GetLength(0); i++)
+                    {
+                        string row = string.Join(" ", Enumerable.Range(0, bestNode.A.GetLength(1)).Select(j => Math.Round(bestNode.A[i, j], 3)));
+                        writer.WriteLine($"{row} <= {Math.Round(bestNode.b[i], 3)}");
+                    }
+
+                    writer.WriteLine();
+                    writer.WriteLine("Tableau Iterations:");
+                    foreach (var node in allNodes)
+                    {
+                        writer.WriteLine($"Iteration {node.Iteration}:");
+                        writer.WriteLine($"B: {string.Join(", ", node.B)}");
+                        writer.WriteLine($"N: {string.Join(", ", node.N)}");
+                        writer.WriteLine("A:");
+                        for (int i = 0; i < node.A.GetLength(0); i++)
+                        {
+                            for (int j = 0; j < node.A.GetLength(1); j++)
+                            {
+                                writer.Write($"{Math.Round(node.A[i, j], 3)} ");
+                            }
+                            writer.WriteLine();
+                        }
+                        writer.WriteLine($"cB: {string.Join(", ", node.cB.Select(v => Math.Round(v, 3)))}");
+                        writer.WriteLine($"cN: {string.Join(", ", node.cN.Select(v => Math.Round(v, 3)))}");
+                        writer.WriteLine($"b: {string.Join(", ", node.b.Select(v => Math.Round(v, 3)))}");
+                        writer.WriteLine();
+                    }
+
+                    writer.WriteLine($"Best Objective Value: {Math.Round(bestValue, 3)}");
                     writer.WriteLine("Best Node Details:");
                     writer.WriteLine($"B: {string.Join(", ", bestNode.B)}");
                     writer.WriteLine($"N: {string.Join(", ", bestNode.N)}");
@@ -160,13 +193,13 @@ namespace LinearProgrammingSolver
                     {
                         for (int j = 0; j < bestNode.A.GetLength(1); j++)
                         {
-                            writer.Write($"{bestNode.A[i, j]} ");
+                            writer.Write($"{Math.Round(bestNode.A[i, j], 3)} ");
                         }
                         writer.WriteLine();
                     }
-                    writer.WriteLine($"cB: {string.Join(", ", bestNode.cB)}");
-                    writer.WriteLine($"cN: {string.Join(", ", bestNode.cN)}");
-                    writer.WriteLine($"b: {string.Join(", ", bestNode.b)}");
+                    writer.WriteLine($"cB: {string.Join(", ", bestNode.cB.Select(v => Math.Round(v, 3)))}");
+                    writer.WriteLine($"cN: {string.Join(", ", bestNode.cN.Select(v => Math.Round(v, 3)))}");
+                    writer.WriteLine($"b: {string.Join(", ", bestNode.b.Select(v => Math.Round(v, 3)))}");
                 }
                 Console.WriteLine($"Results written to {outputFilePath}");
             }
@@ -184,8 +217,9 @@ namespace LinearProgrammingSolver
             public double[] cB { get; set; }
             public double[] cN { get; set; }
             public double[] b { get; set; }
+            public int Iteration { get; }
 
-            public Node(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+            public Node(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b, int iteration = 0)
             {
                 this.B = new List<int>(B);
                 this.N = new List<int>(N);
@@ -193,6 +227,7 @@ namespace LinearProgrammingSolver
                 this.cB = (double[])cB.Clone();
                 this.cN = (double[])cN.Clone();
                 this.b = (double[])b.Clone();
+                this.Iteration = iteration;
             }
         }
     }

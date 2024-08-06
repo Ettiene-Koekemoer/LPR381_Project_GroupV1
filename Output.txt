@@ -1,0 +1,24 @@
+Canonical Form:
+Objective Function: 0
+Constraints:
+5 7 4 3 1 <= 14
+
+Tableau Iterations:
+Iteration 0:
+B: 4
+N: 0, 1, 2, 3
+A:
+5 7 4 3 1 
+cB: 0
+cN: 16, 22, 12, 8
+b: 14
+
+Best Objective Value: 0
+Best Node Details:
+B: 4
+N: 0, 1, 2, 3
+A:
+5 7 4 3 1 
+cB: 0
+cN: 16, 22, 12, 8
+b: 14
