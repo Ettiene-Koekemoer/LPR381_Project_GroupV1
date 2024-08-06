@@ -53,7 +53,7 @@ namespace LinearProgrammingSolver
 
         static LinearProgrammingModel LoadModel()
         {
-            const string basePath = "C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/Models";
+            const string basePath = "C:/Users/danil/OneDrive/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/Models";
 
             try
             {
