@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LinearProgrammingSolver")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fe0530c8283d91925042055bf2f52992326426b4")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0d88a5f66eaaafb8c013729a2b36bc9eb09d2c2")]
 [assembly: System.Reflection.AssemblyProductAttribute("LinearProgrammingSolver")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LinearProgrammingSolver")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

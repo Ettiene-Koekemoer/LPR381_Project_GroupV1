@@ -59,7 +59,12 @@ namespace LinearProgrammingSolver
 
         static LinearProgrammingModel LoadModel()
         {
-            const string basePath = "C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/Models";
+            // const string basePath = "C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/Models";
+
+            // -> LO testing to see if the file path can be made to work with static path
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..","Models");
+            basePath = Path.GetFullPath(basePath); // Resolve relative path to absolute
+            //<-
 
             try
             {
