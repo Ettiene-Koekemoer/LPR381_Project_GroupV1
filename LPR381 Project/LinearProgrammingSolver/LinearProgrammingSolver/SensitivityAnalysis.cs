@@ -138,7 +138,6 @@ namespace LinearProgrammingSolver
             }
             Console.WriteLine();
         }
-
         private static void DisplayBasicVariableRange(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
         {
             int m = b.Length; // Number of constraints
@@ -284,11 +283,6 @@ namespace LinearProgrammingSolver
 
             Console.WriteLine($"Added new variable with index {newVariableIndex} and coefficient {newVariableObjectiveCoefficient}");
         }
-
-
-
-
-
         private static void AddNewConstraint(ref List<int> B, ref List<int> N, ref double[,] A, ref double[] cB, ref double[] cN, ref double[] b)
         {
             Console.WriteLine("Adding a new Constraint...");

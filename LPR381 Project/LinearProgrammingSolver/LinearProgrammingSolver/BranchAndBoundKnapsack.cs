@@ -22,7 +22,8 @@ namespace LinearProgrammingSolver
             }
 
             var (B, N, A, cB, cN, b) = result.Value;
-            var nodes = new List<Node> { new Node(B, N, A, cB, cN, b) };
+            var nodes = new Queue<Node>();
+            nodes.Enqueue(new Node(B, N, A, cB, cN, b));
             double bestValue = double.NegativeInfinity;
             Node bestNode = null;
 
@@ -31,8 +32,7 @@ namespace LinearProgrammingSolver
 
             while (nodes.Count > 0)
             {
-                var currentNode = nodes[0];
-                nodes.RemoveAt(0);
+                var currentNode = nodes.Dequeue();
 
                 var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel(currentNode.B, currentNode.N, currentNode.A, currentNode.cB, currentNode.cN, currentNode.b));
                 if (currentResult == null)
@@ -55,13 +55,14 @@ namespace LinearProgrammingSolver
                 else
                 {
                     var (leftNode, rightNode) = Branch(new Node(curB, curN, curA, curCB, curCN, curBVal));
-                    nodes.Add(leftNode);
-                    nodes.Add(rightNode);
+                    nodes.Enqueue(leftNode);
+                    nodes.Enqueue(rightNode);
                 }
             }
 
             WriteOutput(bestNode, bestValue);
         }
+
 
         private static bool IsIntegerSolution(double[] solution)
         {
@@ -148,7 +149,7 @@ namespace LinearProgrammingSolver
 
         private static void WriteOutput(Node bestNode, double bestValue)
         {
-            string outputFilePath = "Output.txt";
+            string outputFilePath = "./Output.txt";
             try
             {
                 using (var writer = new StreamWriter(outputFilePath))
