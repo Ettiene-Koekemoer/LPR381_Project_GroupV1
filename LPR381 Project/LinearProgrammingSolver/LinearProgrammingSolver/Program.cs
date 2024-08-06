@@ -105,7 +105,7 @@ namespace LinearProgrammingSolver
 
             switch (choice)
             {
-                case "1":
+                case "1":                                        
                     PrimalSimplex.Solve(model);
                     break;
                 case "2":
