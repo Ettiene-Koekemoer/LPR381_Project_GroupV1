@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace LinearProgrammingSolver
 {
@@ -9,40 +10,45 @@ namespace LinearProgrammingSolver
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the Linear Programming Solver");
-            ShowMenu();
-        }
 
-        static void ShowMenu()
-        {
             LinearProgrammingModel model = null;
 
             while (true)
             {
-                Console.WriteLine("1. Load Model");
-                Console.WriteLine("2. Select Algorithm");
-                Console.WriteLine("3. Perform Sensitivity Analysis");
-                Console.WriteLine("4. Exit");
+                if (model == null)
+                {
+                    model = LoadModel();
+                    if (model == null)
+                    {
+                        Console.WriteLine("Failed to load model. Exiting...");
+                        return;
+                    }
+                }
+
+                ShowMenu(model);
+                model = null; // Reset model after menu actions
+            }
+        }
+
+        static void ShowMenu(LinearProgrammingModel model)
+        {
+            while (true)
+            {
+                Console.WriteLine("1. Select Algorithm");
+                Console.WriteLine("2. Perform Sensitivity Analysis");
+                Console.WriteLine("3. Exit");
 
                 var choice = Console.ReadLine();
 
                 switch (choice)
                 {
                     case "1":
-                        model = LoadModel();
+                        SelectAlgorithm(model);
                         break;
                     case "2":
-                        if (model != null)
-                            SelectAlgorithm(model);
-                        else
-                            Console.WriteLine("Please load a model first.");
+                        SensitivityAnalysis.Perform(model);
                         break;
                     case "3":
-                        if (model != null)
-                            SensitivityAnalysis.Perform(model);
-                        else
-                            Console.WriteLine("Please load a model first.");
-                        break;
-                    case "4":
                         return;
                     default:
                         Console.WriteLine("Invalid choice, please try again.");
@@ -63,14 +69,17 @@ namespace LinearProgrammingSolver
                     Console.WriteLine("No model files found in the directory.");
                     return null;
                 }
-
-                Console.WriteLine("Available models:");
+                
+                Console.WriteLine();
+                Console.WriteLine("Please select one of the available modals:");
                 for (int i = 0; i < files.Length; i++)
                 {
                     Console.WriteLine($"{i + 1}. {Path.GetFileName(files[i])}");
                 }
-
+                
+                Console.WriteLine();
                 Console.WriteLine("Enter the number of the model you want to load:");
+                
                 if (int.TryParse(Console.ReadLine(), out int fileIndex) && fileIndex > 0 && fileIndex <= files.Length)
                 {
                     var filePath = files[fileIndex - 1];
