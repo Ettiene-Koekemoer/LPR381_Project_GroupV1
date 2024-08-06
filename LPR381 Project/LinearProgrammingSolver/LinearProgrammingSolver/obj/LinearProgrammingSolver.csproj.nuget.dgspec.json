@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {}
+    "C:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {}
   },
   "projects": {
-    "c:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {
+    "C:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
+        "projectUniqueName": "C:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
         "projectName": "LinearProgrammingSolver",
-        "projectPath": "c:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
+        "projectPath": "C:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\LinearProgrammingSolver.csproj",
         "packagesPath": "C:\\Users\\liamo\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\obj\\",
+        "outputPath": "C:\\Users\\liamo\\Documents\\GitHub\\LPR381_Project_GroupV1\\LPR381 Project\\LinearProgrammingSolver\\LinearProgrammingSolver\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\liamo\\AppData\\Roaming\\NuGet\\NuGet.Config"
