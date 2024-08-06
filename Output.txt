@@ -1,6 +1,16 @@
-  Variable      Ratio       Rank
-        x1     -3,200          1
-        x2     -3,143          2
-        x3     -3,000          3
-        x4     -2,667          4
 
+Canonical Form:
+
+   -16,000   -22,000   -12,000    -8,000     0,000     0,000     0,000     0,000     0,000
+     5,000     7,000     4,000     3,000     1,000     0,000     0,000     0,000    14,000
+
+
+
+Variable Table:
+  Variable      Ratio       Rank
+        x4      2,667          1
+        x3      3,000          2
+        x2      3,143          3
+        x1      3,200          4
+
+Iterations and Additional Results:
