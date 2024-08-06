@@ -27,7 +27,7 @@ namespace LinearProgrammingSolver
                 var currentNode = nodes[0];
                 nodes.RemoveAt(0);
 
-                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel(currentNode.B, currentNode.N, currentNode.A, currentNode.cB, currentNode.cN, currentNode.b)); // Pass current node's data to solve
+                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel(currentNode.B, currentNode.N, currentNode.A, currentNode.cB, currentNode.cN, currentNode.b));
                 if (currentResult == null)
                     continue;
 
@@ -65,7 +65,6 @@ namespace LinearProgrammingSolver
 
         private static (Node leftNode, Node rightNode) Branch(Node node)
         {
-            // Implement the branching logic to create left and right nodes
             int branchIndex = -1;
             double fractionalValue = 0;
 
@@ -127,70 +126,6 @@ namespace LinearProgrammingSolver
             node.b = newb;
         }
 
-        private static void DisplayTableau(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-        {
-            if (N.Count != cN.Length || B.Count != cB.Length)
-            {
-                throw new ArgumentException("Dimension mismatch between lists and arrays.");
-            }
-
-            Console.WriteLine("Objective Function:");
-            Console.Write("Max Z\t");
-            for (int i = 0; i < cN.Length; i++)
-            {
-                Console.Write($"{cN[i]}X{N[i]}\t");
-            }
-            Console.WriteLine();
-
-            Console.WriteLine("Constraints:");
-            for (int i = 0; i < A.GetLength(0); i++)
-            {
-                for (int j = 0; j < A.GetLength(1); j++)
-                {
-                    Console.Write($"{A[i, j]}X{N[j]}\t");
-                }
-                Console.WriteLine($" <= {b[i]}");
-            }
-
-            Console.WriteLine();
-
-            Console.WriteLine("Tableau:");
-            Console.Write("Item\tIn/Out\tRemainder\t");
-            for (int i = 0; i < N.Count; i++)
-            {
-                Console.Write($"X{N[i]}\t");
-            }
-            Console.WriteLine();
-
-            for (int i = 0; i < N.Count; i++)
-            {
-                if (i >= B.Count || i >= cB.Length)
-                {
-                    Console.WriteLine("Error: Index out of range while displaying tableau.");
-                    return;
-                }
-
-                Console.Write($"X{N[i]}\t");
-                Console.Write($"{(B.Contains(N[i]) ? "1" : "0")}\t");
-                Console.Write($"{b[i]}\t");
-                for (int j = 0; j < A.GetLength(1); j++)
-                {
-                    if (i >= A.GetLength(0) || j >= A.GetLength(1))
-                    {
-                        Console.WriteLine("Error: Index out of range while displaying tableau.");
-                        return;
-                    }
-                    Console.Write($"{A[i, j]}\t");
-                }
-                Console.WriteLine();
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("Branching Information:");
-            Console.WriteLine($"Branch on {N[0]}");
-        }
-
-
         private static double CalculateObjectiveValue(List<int> B, double[] cB)
         {
             double value = 0;
@@ -206,10 +141,23 @@ namespace LinearProgrammingSolver
             string outputFilePath = "output_knapsack.txt";
             using (var writer = new System.IO.StreamWriter(outputFilePath))
             {
-                // Write the best node's tableau and objective value
+                // Write the best node's objective value
                 writer.WriteLine($"Best Objective Value: {bestValue}");
-                writer.WriteLine("Best Node Tableau:");
-                DisplayTableau(bestNode.B, bestNode.N, bestNode.A, bestNode.cB, bestNode.cN, bestNode.b);
+                writer.WriteLine("Best Node Details:");
+                writer.WriteLine($"B: {string.Join(", ", bestNode.B)}");
+                writer.WriteLine($"N: {string.Join(", ", bestNode.N)}");
+                writer.WriteLine("A:");
+                for (int i = 0; i < bestNode.A.GetLength(0); i++)
+                {
+                    for (int j = 0; j < bestNode.A.GetLength(1); j++)
+                    {
+                        writer.Write($"{bestNode.A[i, j]} ");
+                    }
+                    writer.WriteLine();
+                }
+                writer.WriteLine($"cB: {string.Join(", ", bestNode.cB)}");
+                writer.WriteLine($"cN: {string.Join(", ", bestNode.cN)}");
+                writer.WriteLine($"b: {string.Join(", ", bestNode.b)}");
             }
             Console.WriteLine($"Results written to {outputFilePath}");
         }
@@ -235,3 +183,4 @@ namespace LinearProgrammingSolver
         }
     }
 }
+

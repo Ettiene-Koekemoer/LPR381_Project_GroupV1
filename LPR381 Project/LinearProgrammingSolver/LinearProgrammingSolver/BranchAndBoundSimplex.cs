@@ -27,16 +27,19 @@ namespace LinearProgrammingSolver
                 var currentNode = nodes[0];
                 nodes.RemoveAt(0);
 
-                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel()); // Assuming Solve method returns a similar tuple for sub-problems
+                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel(currentNode.B, currentNode.N, currentNode.A, currentNode.cB, currentNode.cN, currentNode.b));
                 if (currentResult == null)
                     continue;
 
-                if (IsIntegerSolution(currentResult.Value.b))
+                var (curB, curN, curA, curCB, curCN, curBVal) = currentResult.Value;
+
+                if (IsIntegerSolution(curBVal))
                 {
-                    if (currentResult.Value.cB[currentResult.Value.cB.Length - 1] > bestValue)
+                    double currentObjectiveValue = CalculateObjectiveValue(curB, curCB);
+                    if (currentObjectiveValue > bestValue)
                     {
-                        bestValue = currentResult.Value.cB[currentResult.Value.cB.Length - 1];
-                        bestNode = currentNode;
+                        bestValue = currentObjectiveValue;
+                        bestNode = new Node(curB, curN, curA, curCB, curCN, curBVal);
                     }
                 }
                 else
@@ -47,7 +50,7 @@ namespace LinearProgrammingSolver
                 }
             }
 
-            WriteOutput(bestNode);
+            WriteOutput(bestNode, bestValue);
         }
 
         private static bool IsIntegerSolution(double[] solution)
@@ -62,7 +65,6 @@ namespace LinearProgrammingSolver
 
         private static (Node leftNode, Node rightNode) Branch(Node node)
         {
-            // Implement the branching logic to create left and right nodes
             int branchIndex = -1;
             double fractionalValue = 0;
 
@@ -124,17 +126,37 @@ namespace LinearProgrammingSolver
             node.b = newb;
         }
 
-        private static void DisplayTableau(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static double CalculateObjectiveValue(List<int> B, double[] cB)
         {
-            // Implement tableau display logic
+            double value = 0;
+            for (int i = 0; i < B.Count; i++)
+            {
+                value += cB[i];
+            }
+            return value;
         }
 
-        private static void WriteOutput(Node bestNode)
+        private static void WriteOutput(Node bestNode, double bestValue)
         {
             string outputFilePath = "output_branch_and_bound.txt";
             using (var writer = new System.IO.StreamWriter(outputFilePath))
             {
-                // Write the best node's tableau and objective value
+                writer.WriteLine($"Best Objective Value: {bestValue}");
+                writer.WriteLine("Best Node Details:");
+                writer.WriteLine($"B: {string.Join(", ", bestNode.B)}");
+                writer.WriteLine($"N: {string.Join(", ", bestNode.N)}");
+                writer.WriteLine("A:");
+                for (int i = 0; i < bestNode.A.GetLength(0); i++)
+                {
+                    for (int j = 0; j < bestNode.A.GetLength(1); j++)
+                    {
+                        writer.Write($"{bestNode.A[i, j]} ");
+                    }
+                    writer.WriteLine();
+                }
+                writer.WriteLine($"cB: {string.Join(", ", bestNode.cB)}");
+                writer.WriteLine($"cN: {string.Join(", ", bestNode.cN)}");
+                writer.WriteLine($"b: {string.Join(", ", bestNode.b)}");
             }
             Console.WriteLine($"Results written to {outputFilePath}");
         }
