@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace LinearProgrammingSolver
 {
@@ -138,28 +139,41 @@ namespace LinearProgrammingSolver
 
         private static void WriteOutput(Node bestNode, double bestValue)
         {
-            string outputFilePath = "output_knapsack.txt";
-            using (var writer = new System.IO.StreamWriter(outputFilePath))
+            if (bestNode == null)
             {
-                // Write the best node's objective value
-                writer.WriteLine($"Best Objective Value: {bestValue}");
-                writer.WriteLine("Best Node Details:");
-                writer.WriteLine($"B: {string.Join(", ", bestNode.B)}");
-                writer.WriteLine($"N: {string.Join(", ", bestNode.N)}");
-                writer.WriteLine("A:");
-                for (int i = 0; i < bestNode.A.GetLength(0); i++)
-                {
-                    for (int j = 0; j < bestNode.A.GetLength(1); j++)
-                    {
-                        writer.Write($"{bestNode.A[i, j]} ");
-                    }
-                    writer.WriteLine();
-                }
-                writer.WriteLine($"cB: {string.Join(", ", bestNode.cB)}");
-                writer.WriteLine($"cN: {string.Join(", ", bestNode.cN)}");
-                writer.WriteLine($"b: {string.Join(", ", bestNode.b)}");
+                Console.WriteLine("No feasible solution found.");
+                return;
             }
-            Console.WriteLine($"Results written to {outputFilePath}");
+
+            string outputFilePath = "Output.txt";
+            try
+            {
+                using (var writer = new StreamWriter(outputFilePath))
+                {
+                    // Write the best node's objective value
+                    writer.WriteLine($"Best Objective Value: {bestValue}");
+                    writer.WriteLine("Best Node Details:");
+                    writer.WriteLine($"B: {string.Join(", ", bestNode.B)}");
+                    writer.WriteLine($"N: {string.Join(", ", bestNode.N)}");
+                    writer.WriteLine("A:");
+                    for (int i = 0; i < bestNode.A.GetLength(0); i++)
+                    {
+                        for (int j = 0; j < bestNode.A.GetLength(1); j++)
+                        {
+                            writer.Write($"{bestNode.A[i, j]} ");
+                        }
+                        writer.WriteLine();
+                    }
+                    writer.WriteLine($"cB: {string.Join(", ", bestNode.cB)}");
+                    writer.WriteLine($"cN: {string.Join(", ", bestNode.cN)}");
+                    writer.WriteLine($"b: {string.Join(", ", bestNode.b)}");
+                }
+                Console.WriteLine($"Results written to {outputFilePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred while writing to the file: {ex.Message}");
+            }
         }
 
         private class Node
@@ -183,4 +197,3 @@ namespace LinearProgrammingSolver
         }
     }
 }
-

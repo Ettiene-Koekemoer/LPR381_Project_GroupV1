@@ -138,7 +138,7 @@ namespace LinearProgrammingSolver
 
         private static void WriteOutput(Node bestNode, double bestValue)
         {
-            string outputFilePath = "output_branch_and_bound.txt";
+            string outputFilePath = "Output.txt";
             using (var writer = new System.IO.StreamWriter(outputFilePath))
             {
                 writer.WriteLine($"Best Objective Value: {bestValue}");
