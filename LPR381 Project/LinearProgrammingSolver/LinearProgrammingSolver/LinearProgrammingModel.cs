@@ -13,6 +13,9 @@ namespace LinearProgrammingSolver
         public List<string> ConstraintOperators { get; set; }
         public List<double> RightHandSides { get; set; }
         public List<string> SignRestrictions { get; set; }
+        public int SolutionRows { get; set; }
+        public int SolutionColumns { get; set; }
+        public double[,] Solution { get; set; }
 
         public LinearProgrammingModel()
         {
@@ -21,6 +24,9 @@ namespace LinearProgrammingSolver
             ConstraintOperators = new List<string>();
             RightHandSides = new List<double>();
             SignRestrictions = new List<string>();
+            SolutionRows = 0;
+            SolutionColumns = 0;
+            Solution = new double[SolutionRows,SolutionColumns];
         }
 
         public void ParseInputFile(string filePath)
@@ -69,5 +75,7 @@ namespace LinearProgrammingSolver
                 SignRestrictions.Add(parts[i]);
             }
         }
+
+
     }
 }
