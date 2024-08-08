@@ -12,3 +12,11 @@ T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.pdb
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.genruntimeconfig.cache
 T:\My desktop\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\ref\LinearProgrammingSolver.dll
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.AssemblyInfoInputs.cache
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.AssemblyInfo.cs
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.csproj.CoreCompileInputs.cache
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.sourcelink.json
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.dll
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\refint\LinearProgrammingSolver.dll
+C:\Users\TJ\Source\Repos\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\obj\Debug\net8.0\LinearProgrammingSolver.pdb
