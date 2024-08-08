@@ -1,40 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace LinearProgrammingSolver
 {
     public static class RevisedSimplex
     {
-        public static (List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)? Solve(LinearProgrammingModel model)
+        public static (List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)? Solve(LinearProgrammingModel model, string outputPath)
         {
-            Console.WriteLine("Solving using Revised Primal Simplex Algorithm...");
-
-            // Convert the model to the canonical form
-            var (B, N, A, cB, cN, b) = ConvertToCanonicalForm(model);
-            DisplayTableau(B, N, A, cB, cN, b);
-
-            // Perform simplex iterations
-            while (true)
+            using (var writer = new StreamWriter(outputPath))
             {
-                var (pivotColumn, d) = SelectPivotColumn(A, cB, cN, B, N);
-                if (pivotColumn == -1)
-                    break; // Optimal solution found
+                writer.WriteLine("Solving using Revised Primal Simplex Algorithm...");
 
-                int pivotRow = SelectPivotRow(b, d);
-                if (pivotRow == -1)
+                // Convert the model to the canonical form
+                var (B, N, A, cB, cN, b) = ConvertToCanonicalForm(model);
+                DisplayTableau(writer, B, N, A, cB, cN, b);
+
+                // Perform simplex iterations
+                while (true)
                 {
-                    Console.WriteLine("Unbounded solution.");
-                    return null;
+                    var (pivotColumn, d) = SelectPivotColumn(A, cB, cN, B, N);
+                    if (pivotColumn == -1)
+                        break; // Optimal solution found
+
+                    int pivotRow = SelectPivotRow(b, d);
+                    if (pivotRow == -1)
+                    {
+                        writer.WriteLine("Unbounded solution.");
+                        return null;
+                    }
+
+                    Pivot(ref B, ref N, ref A, ref cB, ref cN, ref b, pivotRow, pivotColumn, d);
+                    DisplayTableau(writer, B, N, A, cB, cN, b);
                 }
 
-                Pivot(ref B, ref N, ref A, ref cB, ref cN, ref b, pivotRow, pivotColumn, d);
-                DisplayTableau(B, N, A, cB, cN, b);
+                // Output the results
+                WriteOutput(writer, B, N, A, cB, cN, b);
+
+                return (B, N, A, cB, cN, b);
             }
-
-            // Output the results
-            WriteOutput(B, N, A, cB, cN, b);
-
-            return (B, N, A, cB, cN, b);
         }
 
         public static (List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b) ConvertToCanonicalForm(LinearProgrammingModel model)
@@ -52,7 +56,7 @@ namespace LinearProgrammingSolver
             for (int i = 0; i < n; i++)
             {
                 N.Add(i);
-                cN[i] = model.ObjectiveCoefficients[i];
+                cN[i] = model.IsMaximization ? model.ObjectiveCoefficients[i] : -model.ObjectiveCoefficients[i];
             }
 
             for (int i = 0; i < m; i++)
@@ -168,50 +172,45 @@ namespace LinearProgrammingSolver
             cB[pivotRow] = cN[pivotColumn];
         }
 
-        private static void DisplayTableau(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static void DisplayTableau(StreamWriter writer, List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
         {
             int m = B.Count;
             int n = N.Count;
 
-            Console.WriteLine("B: " + string.Join(", ", B));
-            Console.WriteLine("N: " + string.Join(", ", N));
-            Console.WriteLine("A:");
+            writer.WriteLine("B: " + string.Join(", ", B));
+            writer.WriteLine("N: " + string.Join(", ", N));
+            writer.WriteLine("A:");
             for (int i = 0; i < m; i++)
             {
                 for (int j = 0; j < n; j++)
                 {
-                    Console.Write($"{A[i, N[j]],10:F3}");
+                    writer.Write($"{A[i, N[j]],10:F3} ");
                 }
-                Console.WriteLine();
+                writer.WriteLine();
             }
-            Console.WriteLine("cB: " + string.Join(", ", cB));
-            Console.WriteLine("cN: " + string.Join(", ", cN));
-            Console.WriteLine("b: " + string.Join(", ", b));
-            Console.WriteLine();
+            writer.WriteLine("cB: " + string.Join(", ", cB));
+            writer.WriteLine("cN: " + string.Join(", ", cN));
+            writer.WriteLine("b: " + string.Join(", ", b));
+            writer.WriteLine();
         }
 
-        private static void WriteOutput(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static void WriteOutput(StreamWriter writer, List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
         {
-            string outputFilePath = "output_revised.txt";
-            using (var writer = new System.IO.StreamWriter(outputFilePath))
+            writer.WriteLine("Revised Primal Simplex Algorithm Output:");
+            writer.WriteLine("B: " + string.Join(", ", B));
+            writer.WriteLine("N: " + string.Join(", ", N));
+            writer.WriteLine("A:");
+            for (int i = 0; i < B.Count; i++)
             {
-                writer.WriteLine("Revised Primal Simplex Algorithm Output:");
-                writer.WriteLine("B: " + string.Join(", ", B));
-                writer.WriteLine("N: " + string.Join(", ", N));
-                writer.WriteLine("A:");
-                for (int i = 0; i < B.Count; i++)
+                for (int j = 0; j < N.Count; j++)
                 {
-                    for (int j = 0; j < N.Count; j++)
-                    {
-                        writer.Write($"{A[i, N[j]],10:F3}");
-                    }
-                    writer.WriteLine();
+                    writer.Write($"{A[i, N[j]],10:F3} ");
                 }
-                writer.WriteLine("cB: " + string.Join(", ", cB));
-                writer.WriteLine("cN: " + string.Join(", ", cN));
-                writer.WriteLine("b: " + string.Join(", ", b));
+                writer.WriteLine();
             }
-            Console.WriteLine($"Results written to {outputFilePath}");
+            writer.WriteLine("cB: " + string.Join(", ", cB));
+            writer.WriteLine("cN: " + string.Join(", ", cN));
+            writer.WriteLine("b: " + string.Join(", ", b));
         }
     }
 }
