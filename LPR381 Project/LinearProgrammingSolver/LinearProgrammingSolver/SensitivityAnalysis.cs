@@ -7,138 +7,93 @@ namespace LinearProgrammingSolver
     {
         public static void Perform(LinearProgrammingModel model)
         {
-            Console.WriteLine("Performing Sensitivity Analysis...");
-
-            // Convert the model to the canonical form
-            var (B, N, A, cB, cN, b) = RevisedSimplex.ConvertToCanonicalForm(model);
-            DisplayTableau(B, N, A, cB, cN, b);
-
-            // Display the range of a selected Non-Basic Variable
-            DisplayNonBasicVariableRange(B, N, A, cB, cN, b);
-
-            // Apply and display a change of a selected Non-Basic Variable
-            ApplyNonBasicVariableChange(B, N, A, cB, cN, b);
-
-            // Display the range of a selected Basic Variable
-            DisplayBasicVariableRange(B, N, A, cB, cN, b);
-
-            // Apply and display a change of a selected Basic Variable
-            ApplyBasicVariableChange(B, N, A, cB, cN, b);
-
-            // Display the range of a selected constraint right-hand-side value
-            DisplayConstraintRange(B, N, A, cB, cN, b);
-
-            // Apply and display a change of a selected constraint right-hand-side value
-            ApplyConstraintChange(B, N, A, cB, cN, b);
-
-            // Add a new activity to an optimal solution
-            AddNewActivity(ref B, ref N, ref A, ref cB, ref cN, ref b);
-
-            // Add a new constraint to an optimal solution
-            AddNewConstraint(ref B, ref N, ref A, ref cB, ref cN, ref b);
-
-            // Display the shadow prices
-            DisplayShadowPrices(B, N, A, cB, cN, b);
-
-            // Apply Duality to the programming model
-            ApplyDuality(B, N, A, cB, cN, b);
-
-            // Solve the Dual Programming Model
-            SolveDualProgrammingModel(B, N, A, cB, cN, b);
-
-            // Verify whether the Programming Model has Strong or Weak Duality
-            VerifyDuality(B, N, A, cB, cN, b);
-        }
-
-        private static void DisplayTableau(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-        {
-            int m = b.Length;
-            int n = cN.Length;
-            Console.WriteLine("Tableau:");
-            
-            Console.Write("   | ");
-            for (int j = 0; j < n; j++)
-                Console.Write($"{N[j],6} ");
-            Console.WriteLine("| RHS");
-            
-            for (int i = 0; i < m; i++)
+            double[,] optimalSolution = model.Solution;
+            if (optimalSolution != null)
             {
-                Console.Write($"{B[i],2} | ");
-                for (int j = 0; j < n; j++)
-                    Console.Write($"{A[i, j],6} ");
-                Console.WriteLine($"| {b[i],6}");
-            }
-            
-            Console.Write("Obj | ");
-            for (int j = 0; j < n; j++)
-                Console.Write($"{cN[j],6} ");
-            Console.WriteLine();
-        }
-
-        private static void DisplayNonBasicVariableRange(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-        {
-            int m = b.Length; // Number of constraints
-            int n = cN.Length; // Number of non-basic variables
-
-            Console.WriteLine("Non-Basic Variable Ranges:");
-
-            for (int j = 0; j < n; j++)
-            {
-                double minRange = double.NegativeInfinity;
-                double maxRange = double.PositiveInfinity;
-
-                double cNj = cN[j];
-
-                for (int i = 0; i < m; i++)
+                while (true)
                 {
-                    if (A[i, j] != 0)
+                    Console.WriteLine();
+                    Console.WriteLine("Select Sensitivity Analysis to perform:");
+                    Console.WriteLine("1.  Display the range of a selected Non-Basic Variable");
+                    Console.WriteLine("2.  Apply and display a change of a selected Non-Basic Variable");
+                    Console.WriteLine("3.  Display the range of a selected Basic Variable");
+                    Console.WriteLine("4.  Apply and display a change of a selected Basic Variable");
+                    Console.WriteLine("5.  Display the range of a selected constraint right-hand-side value");
+                    Console.WriteLine("6.  Apply and display a change of a selected constraint right-hand-side value");
+                    Console.WriteLine("7.  Display the range of a selected variable in a Non-Basic Variable column");
+                    Console.WriteLine("8.  Apply and display a change of a selected variable in a Non-Basic Variable column");
+                    Console.WriteLine("9.  Add a new activity to an optimal solution");
+                    Console.WriteLine("10. Add a new constraint to an optimal solution");
+                    Console.WriteLine("11. Display the shadow prices");
+                    Console.WriteLine("12. Duality");
+                    Console.WriteLine("13. Exit");
+
+                    var choice = Console.ReadLine();
+
+                    switch (choice)
                     {
-                        double rhs = b[i];
-                        double aij = A[i, j];
-                        double reducedCost = cNj;
-                        double range = (rhs - reducedCost) / aij;
-
-                        if (A[i, j] > 0)
-                        {
-                            minRange = Math.Max(minRange, range);
-                        }
-                        else
-                        {
-                            maxRange = Math.Min(maxRange, range);
-                        }
+                        case "1":
+                            DisplayNonBasicVariableRange(optimalSolution);
+                            break;
+                        case "2":
+                            ApplyNonBasicVariableChange(optimalSolution);
+                            break;
+                        case "3":
+                            DisplayBasicVariableRange(optimalSolution);
+                            break;
+                        case "4":
+                            ApplyBasicVariableChange(optimalSolution);
+                            break;
+                        case "5":
+                            DisplayConstraintRHSRange(optimalSolution);
+                            break;
+                        case "6":
+                            ApplyConstraintRHSChange(optimalSolution);
+                            break;
+                        case "7":
+                            DisplayNonBasicVariableColumnRange(optimalSolution);
+                            break;
+                        case "8":
+                            ApplyNonBasicVariableColumnChange(optimalSolution);
+                            break;
+                        case "9":
+                            AddNewActivity(optimalSolution);
+                            break;
+                        case "10":
+                            AddNewConstraint(optimalSolution);
+                            break;
+                        case "11":
+                            DisplayShadowPrices(optimalSolution);
+                            break;
+                        case "12":
+                            PerformDuality(optimalSolution);
+                            break;
+                        case "13":
+                            return;
+                        default:
+                            Console.WriteLine("Invalid choice, please try again.");
+                            break;
                     }
-                }
-
-                Console.WriteLine($"Variable {N[j]}: [{minRange}, {maxRange}]");
+                }            
             }
-        }
-
-        private static void ApplyNonBasicVariableChange(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-        {
-            Console.WriteLine("Applying change to a Non-Basic Variable...");
-
-            int n = cN.Length; // Number of non-basic variables
-
-            Console.Write("Enter the index of the non-basic variable to change: ");
-            int variableIndex = int.Parse(Console.ReadLine());
-
-            Console.Write("Enter the new coefficient for the variable: ");
-            double newCoefficient = double.Parse(Console.ReadLine());
-
-            // Update the coefficient in the objective function
-            cN[variableIndex] = newCoefficient;
-
-            Console.WriteLine($"New coefficient for variable {N[variableIndex]}: {newCoefficient}");
-            
-            Console.WriteLine("Updated Objective Function:");
-            Console.Write("Objective Function Coefficients: ");
-            for (int i = 0; i < cN.Length; i++)
+            else
             {
-                Console.Write($"{cN[i]} ");
+                Console.WriteLine("An optimal solution was not present or there was an error");
+                Console.WriteLine();
             }
-            Console.WriteLine();
         }
-        private static void DisplayBasicVariableRange(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+
+        private static void DisplayNonBasicVariableRange(double[,] solutionTableau)
+        {
+            // Implement the logic to display the range of a selected Non-Basic Variable
+        }
+
+        private static void ApplyNonBasicVariableChange(double[,] solutionTableau)
+        {
+            // Implement the logic to apply and display a change of a selected Non-Basic Variable
+        }
+
+        private static void DisplayBasicVariableRange(double[,] solutionTableaub)
         {
             int m = b.Length; // Number of constraints
             int numBasicVariables = B.Count;
@@ -176,25 +131,32 @@ namespace LinearProgrammingSolver
             }
         }
 
-        private static void ApplyBasicVariableChange(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static void ApplyBasicVariableChange(double[,] solutionTableau)
         {
-            Console.WriteLine("Applying change to a Basic Variable...");
-
-            int numBasicVariables = B.Count;
-
-            Console.Write("Enter the index of the basic variable to change: ");
-            int basicVariableIndex = int.Parse(Console.ReadLine());
-
-            Console.Write("Enter the new coefficient for the variable: ");
-            double newCoefficient = double.Parse(Console.ReadLine());
-
-            // Update the coefficient in the objective function
-            cB[basicVariableIndex] = newCoefficient;
-
-            Console.WriteLine($"New coefficient for variable {B[basicVariableIndex]}: {newCoefficient}");
+            // Implement the logic to apply and display a change of a selected Basic Variable
         }
 
-        private static void DisplayConstraintRange(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static void DisplayConstraintRHSRange(double[,] solutionTableau)
+        {
+            // Implement the logic to display the range of a selected constraint right-hand-side value
+        }
+
+        private static void ApplyConstraintRHSChange(double[,] solutionTableau)
+        {
+            // Implement the logic to apply and display a change of a selected constraint right-hand-side value
+        }
+
+        private static void DisplayNonBasicVariableColumnRange(double[,] solutionTableau)
+        {
+            // Implement the logic to display the range of a selected constraint right-hand-side value
+        }
+
+        private static void ApplyNonBasicVariableColumnChange(double[,] solutionTableau)
+        {
+            // Implement the logic to apply and display a change of a selected constraint right-hand-side value
+        }
+
+        private static void DisplayNonBasicVariableColumnRange(double[,] solutionTableau)
         {
             int m = b.Length; // Number of constraints
             int numBasicVariables = B.Count;
@@ -231,7 +193,7 @@ namespace LinearProgrammingSolver
             }
         }
 
-        private static void ApplyConstraintChange(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static void ApplyNonBasicVariableColumnChange(double[,] solutionTableau)
         {
             Console.WriteLine("Applying change to a Constraint...");
 
@@ -246,44 +208,12 @@ namespace LinearProgrammingSolver
             Console.WriteLine($"New RHS for constraint {constraintIndex}: {newRHS}");
         }
 
-        private static void AddNewActivity(ref List<int> B, ref List<int> N, ref double[,] A, ref double[] cB, ref double[] cN, ref double[] b)
+        private static void AddNewActivity(double[,] solutionTableau)
         {
-            Console.WriteLine("Adding new activity...");
-
-            // Example: Add a new variable to the model
-            int newVariableIndex = cN.Length; // Index for the new variable
-            double newVariableObjectiveCoefficient = 5; // Example objective coefficient
-
-            // Update cN array
-            Array.Resize(ref cN, cN.Length + 1);
-            cN[newVariableIndex] = newVariableObjectiveCoefficient;
-
-            // Update A array (constraints matrix)
-            int numRows = A.GetLength(0);
-            int numCols = A.GetLength(1);
-            double[,] newA = new double[numRows, numCols + 1];
-            for (int i = 0; i < numRows; i++)
-            {
-                for (int j = 0; j < numCols; j++)
-                {
-                    newA[i, j] = A[i, j];
-                }
-            }
-            for (int i = 0; i < numRows; i++)
-            {
-                newA[i, newVariableIndex] = 0; // Initialize new variable column to 0
-            }
-
-            // Update b array
-            Array.Resize(ref b, b.Length + 1);
-            b[b.Length - 1] = 10; // Example RHS value for the new constraint
-
-            // Assign updated arrays
-            A = newA;
-
-            Console.WriteLine($"Added new variable with index {newVariableIndex} and coefficient {newVariableObjectiveCoefficient}");
+            // Implement the logic to add a new activity to an optimal solution
         }
-        private static void AddNewConstraint(ref List<int> B, ref List<int> N, ref double[,] A, ref double[] cB, ref double[] cN, ref double[] b)
+
+        private static void AddNewConstraint(double[,] solutionTableau)
         {
             Console.WriteLine("Adding a new Constraint...");
 
@@ -309,7 +239,7 @@ namespace LinearProgrammingSolver
             A = newA;
         }
 
-        private static void DisplayShadowPrices(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static void DisplayShadowPrices(double[,] tableau/*, double[,] solutionTableau*/)
         {
             Console.WriteLine("Shadow Prices:");
 
@@ -321,16 +251,7 @@ namespace LinearProgrammingSolver
             }
         }
 
-        private static void ApplyDuality(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-        {
-            Console.WriteLine("Applying Duality...");
-
-            // Assuming duality is implemented and requires switching objective function and constraints
-            // Placeholder implementation: Adapt based on duality approach used
-            Console.WriteLine("Duality applied with updated constraints and objective function.");
-        }
-
-        private static void SolveDualProgrammingModel(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static void PerformDuality(double[,] tableau)
         {
             Console.WriteLine("Solving Dual Programming Model...");
 
@@ -339,13 +260,19 @@ namespace LinearProgrammingSolver
             Console.WriteLine("Dual programming model solved.");
         }
 
-        private static void VerifyDuality(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-        {
-            Console.WriteLine("Verifying Duality...");
 
-            // Verify duality (Strong/Weak) based on current solution
-            // Placeholder implementation: Adapt based on duality verification method
-            Console.WriteLine("Duality verified as Strong.");
+
+        private static void DisplayTableau(double[,] tableau)
+        {
+            for (int i = 0; i < tableau.GetLength(0); i++)
+            {
+                for (int j = 0; j < tableau.GetLength(1); j++)
+                {
+                    Console.Write($"{tableau[i, j],10:F3}");
+                }
+                Console.WriteLine();
+            }
+            Console.WriteLine();
         }
     }
 }

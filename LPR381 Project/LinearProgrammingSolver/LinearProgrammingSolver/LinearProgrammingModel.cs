@@ -20,6 +20,9 @@ namespace LinearProgrammingSolver
         public double[] cB { get; }
         public double[] cN { get; }
         public double[] b { get; }
+        public int SolutionRows { get; set; }
+        public int SolutionColumns { get; set; }
+        public double[,] Solution { get; set; }
 
         public LinearProgrammingModel()
         {
@@ -28,7 +31,9 @@ namespace LinearProgrammingSolver
             ConstraintOperators = new List<string>();
             RightHandSides = new List<double>();
             SignRestrictions = new List<string>();
-            
+            SolutionRows = 0;
+            SolutionColumns = 0;
+            Solution = new double[SolutionRows,SolutionColumns];
         }
         public LinearProgrammingModel(List<int> B, List<string> N, double[,] A, double[] cB, double[] cN, double[] b)
         {
@@ -186,5 +191,7 @@ namespace LinearProgrammingSolver
                 SignRestrictions.Add(parts[i]);
             }
         }
+
+
     }
 }

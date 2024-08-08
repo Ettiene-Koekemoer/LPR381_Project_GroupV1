@@ -139,12 +139,13 @@ namespace LinearProgrammingSolver
                     }
 
                     Pivot(tableau, pivotDualRow, pivotDualColumn);
-                    DisplayTableau(tableau);
+                    DisplayTableau(tableau);                    
                     outputString.Append(BuildTable(tableau));
                 }
             }
             outputString.Append($"Optimal Solution: {tableau[0, tableau.GetLength(1) - 1]}");
             WriteOutput(outputString.ToString());
+            SaveSolution(tableau, model);
         }
         
         private static bool HasDecimal(double value)
@@ -377,6 +378,16 @@ namespace LinearProgrammingSolver
             }
             tableBuilder.AppendLine();
             return tableBuilder.ToString();
+        }
+
+        private static void SaveSolution(double[,] optimalTableau, LinearProgrammingModel model)
+        {
+            int rows = optimalTableau.GetLength(0);
+            int columns = optimalTableau.GetLength(1);
+
+            model.SolutionRows = rows;
+            model.SolutionColumns = columns;
+            model.Solution = optimalTableau;
         }
     }
 }
