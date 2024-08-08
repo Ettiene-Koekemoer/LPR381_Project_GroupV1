@@ -13,35 +13,26 @@ namespace LinearProgrammingSolver
 
         public static void Solve(LinearProgrammingModel model)
         {
-            int initialBranches = 1; // Start with one branch
             int rows = model.A.GetLength(0) + 1;
             int columns = model.A.GetLength(1) + model.B.Count + 1;
-            tableau = new double[initialBranches, rows, columns];
-            branchCount = initialBranches;
+            tableau = new double[1, rows, columns]; // Start with a single branch
 
             // Convert the model to the canonical form
             ConvertToCanonicalForm(model, 0);
-
-            // Create a table for variables, ratios, and ranks
-            var variableTable = CreateVariableTable(0, model);
-
-            // Initialize the branches
-            var branches = new Queue<int>();
-            branches.Enqueue(0); // Start with branch 0
 
             // Initialize best solution variables
             double bestObjectiveValue = double.NegativeInfinity;
             List<(string Variable, int InOut, double Remainder)> bestSolution = null;
 
+            var branches = new Queue<int>();
+            branches.Enqueue(0); // Start with branch 0
+
             // Process branches
             while (branches.Count > 0)
             {
                 int currentBranch = branches.Dequeue();
-
-                // Convert the branch's tableau to a list format for processing
                 var currentTable = ConvertTableToList(currentBranch, model);
 
-                // Check if the current table is an optimal solution
                 if (IsOptimalSolution(currentTable))
                 {
                     double currentObjectiveValue = CalculateObjectiveValue(currentTable, model);
@@ -53,11 +44,9 @@ namespace LinearProgrammingSolver
                 }
                 else
                 {
-                    // Determine the next branching variable
                     var branchVariable = GetBranchVariable(currentTable);
                     if (branchVariable != null)
                     {
-                        // Create new branches
                         var newBranches = CreateBranches(currentBranch, branchVariable, model);
                         foreach (var newBranch in newBranches)
                         {
@@ -65,12 +54,11 @@ namespace LinearProgrammingSolver
                         }
                     }
                 }
-                
             }
 
-            // Output results
-            WriteResults(variableTable, bestSolution, bestObjectiveValue);
+            WriteResults(CreateVariableTable(0, model), bestSolution, bestObjectiveValue);
         }
+
 
         private static void ConvertToCanonicalForm(LinearProgrammingModel model, int branchIndex)
         {
