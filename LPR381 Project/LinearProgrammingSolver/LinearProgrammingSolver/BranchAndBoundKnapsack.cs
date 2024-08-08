@@ -8,16 +8,26 @@ namespace LinearProgrammingSolver
 {
     public static class BranchAndBoundKnapsack
     {
+        private static double[,,] tableau;
+        private static int branchCount;
+
         public static void Solve(LinearProgrammingModel model)
         {
+            int initialBranches = 1; // Start with one branch
+            int rows = model.A.GetLength(0) + 1;
+            int columns = model.A.GetLength(1) + model.B.Count + 1;
+            tableau = new double[initialBranches, rows, columns];
+            branchCount = initialBranches;
+
             // Convert the model to the canonical form
-            var tableau = ConvertToCanonicalForm(model);
+            ConvertToCanonicalForm(model, 0);
 
             // Create a table for variables, ratios, and ranks
-            var variableTable = CreateVariableTable(tableau, model);
+            var variableTable = CreateVariableTable(0, model);
 
             // Initialize the branches
-            var branches = InitializeBranches(variableTable, model);
+            var branches = new Queue<int>();
+            branches.Enqueue(0); // Start with branch 0
 
             // Initialize best solution variables
             double bestObjectiveValue = double.NegativeInfinity;
@@ -26,7 +36,10 @@ namespace LinearProgrammingSolver
             // Process branches
             while (branches.Count > 0)
             {
-                var (branchName, currentTable) = branches.Dequeue();
+                int currentBranch = branches.Dequeue();
+
+                // Convert the branch's tableau to a list format for processing
+                var currentTable = ConvertTableToList(currentBranch, model);
 
                 // Check if the current table is an optimal solution
                 if (IsOptimalSolution(currentTable))
@@ -45,67 +58,61 @@ namespace LinearProgrammingSolver
                     if (branchVariable != null)
                     {
                         // Create new branches
-                        var newTables = CreateBranches(currentTable, branchVariable, model);
-                        foreach (var (newBranchName, newTable) in newTables)
+                        var newBranches = CreateBranches(currentBranch, branchVariable, model);
+                        foreach (var newBranch in newBranches)
                         {
-                            branches.Enqueue((newBranchName, newTable));
+                            branches.Enqueue(newBranch);
                         }
                     }
                 }
+                
             }
 
             // Output results
             WriteResults(variableTable, bestSolution, bestObjectiveValue);
         }
 
-        private static double[,] ConvertToCanonicalForm(LinearProgrammingModel model)
+        private static void ConvertToCanonicalForm(LinearProgrammingModel model, int branchIndex)
         {
             int rows = model.A.GetLength(0) + 1;
             int columns = model.A.GetLength(1) + model.B.Count + 1;
-            double[,] tableau = new double[rows, columns];
 
             // Objective function
             for (int j = 0; j < model.cN.Length; j++)
-                tableau[0, j] = model.cN[j];
+                tableau[branchIndex, 0, j] = model.cN[j];
 
             // Constraints
             for (int i = 0; i < model.A.GetLength(0); i++)
             {
                 for (int j = 0; j < model.A.GetLength(1); j++)
                 {
-                    tableau[i + 1, j] = model.A[i, j];
+                    tableau[branchIndex, i + 1, j] = model.A[i, j];
                 }
-                tableau[i + 1, model.A.GetLength(1) + i] = 1; // Slack variable
-                tableau[i + 1, columns - 1] = model.b[i];
+                tableau[branchIndex, i + 1, model.A.GetLength(1) + i] = 1; // Slack variable
+                tableau[branchIndex, i + 1, columns - 1] = model.b[i];
             }
-
-            return tableau;
         }
 
-        private static List<(string Variable, double Ratio, int Rank)> CreateVariableTable(double[,] tableau, LinearProgrammingModel model)
+        private static List<(string Variable, double Ratio, int Rank)> CreateVariableTable(int branchIndex, LinearProgrammingModel model)
         {
             var variableTable = new List<(string Variable, double Ratio, int Rank)>();
 
-            // Calculate ratios and ranks
-            for (int j = 0; j < model.cN.Length; j++)
+            // Calculate ratios and ranks for the first branch
+            int numVariables = model.cN.Length;
+            for (int j = 0; j < numVariables; j++)
             {
-                // Calculate the ratio
-                double ratio = tableau[0, j] / tableau[1, j];
-                // ratio *= -1; // Adjust for positive values
-
+                double ratio = tableau[branchIndex, 0, j] / tableau[branchIndex, 1, j];
                 variableTable.Add(($"x{j + 1}", ratio, 0));
             }
 
             // Rank variables based on ratio
             if (model.IsMaximization)
             {
-                // Sort in descending order for maximization
-                variableTable = variableTable.OrderBy(v => v.Ratio).ToList();
+                variableTable = variableTable.OrderByDescending(v => v.Ratio).ToList();
             }
             else
             {
-                // Sort in ascending order for minimization
-                variableTable = variableTable.OrderByDescending(v => v.Ratio).ToList();
+                variableTable = variableTable.OrderBy(v => v.Ratio).ToList();
             }
 
             // Assign ranks
@@ -117,23 +124,22 @@ namespace LinearProgrammingSolver
             return variableTable;
         }
 
-
-        private static Queue<(string BranchName, List<(string Variable, int InOut, double Remainder)> Table)> InitializeBranches(List<(string Variable, double Ratio, int Rank)> variableTable, LinearProgrammingModel model)
+        private static List<(string Variable, int InOut, double Remainder)> ConvertTableToList(int branchIndex, LinearProgrammingModel model)
         {
-            var branches = new Queue<(string BranchName, List<(string Variable, int InOut, double Remainder)> Table)>();
-            branches.Enqueue(("P0", CreateInitialTable(variableTable, model)));
-            return branches;
-        }
+            int rows = model.A.GetLength(0);
+            var tableList = new List<(string Variable, int InOut, double Remainder)>();
 
-        private static List<(string Variable, int InOut, double Remainder)> CreateInitialTable(List<(string Variable, double Ratio, int Rank)> variableTable, LinearProgrammingModel model)
-        {
-            var initialTable = variableTable.Select(v => (v.Variable, InOut: 0, Remainder: model.b.Max() /* Placeholder for remainder */)).ToList();
-            return initialTable;
+            for (int i = 0; i < rows; i++)
+            {
+                var variable = $"x{i + 1}";
+                tableList.Add((variable, 0, tableau[branchIndex, i + 1, tableau.GetLength(2) - 1]));
+            }
+
+            return tableList;
         }
 
         private static bool IsOptimalSolution(List<(string Variable, int InOut, double Remainder)> table)
         {
-            // Check if all variables are included and there is no negative remainder
             return table.All(v => v.Remainder >= 0);
         }
 
@@ -147,38 +153,45 @@ namespace LinearProgrammingSolver
             return table.FirstOrDefault(v => v.Remainder <= 0).Variable;
         }
 
-        private static List<(string BranchName, List<(string Variable, int InOut, double Remainder)> Table)> CreateBranches(List<(string Variable, int InOut, double Remainder)> table, string branchVariable, LinearProgrammingModel model)
+        private static List<int> CreateBranches(int currentBranch, string branchVariable, LinearProgrammingModel model)
         {
-            var newTables = new List<(string BranchName, List<(string Variable, int InOut, double Remainder)> Table)>();
+            var newBranches = new List<int>();
 
-            // Branch with the variable set to 0
-            var tableZero = UpdateTableForBranch(table, branchVariable, 0, model);
-            newTables.Add(("P0.1", tableZero));
+            // Create new branches with updated tableau
+            int rows = model.A.GetLength(0) + 1;
+            int columns = model.A.GetLength(1) + model.B.Count + 1;
 
-            // Branch with the variable set to 1
-            var tableOne = UpdateTableForBranch(table, branchVariable, 1, model);
-            newTables.Add(("P0.2", tableOne));
+            // Increase the number of branches
+            int newBranchIndex1 = branchCount;
+            int newBranchIndex2 = branchCount + 1;
 
-            return newTables;
+            // Create a new larger tableau array
+            double[,,] newTableau = new double[branchCount + 2, rows, columns];
+            Array.Copy(tableau, newTableau, branchCount * rows * columns);
+            tableau = newTableau;
+
+            // Initialize new branches
+            Array.Copy(tableau[currentBranch], tableau[newBranchIndex1], rows * columns);
+
+            // Update tableau for the new branches
+            UpdateTableForBranch(newBranchIndex1, branchVariable, 0, model);
+            UpdateTableForBranch(newBranchIndex2, branchVariable, 1, model);
+
+            newBranches.Add(newBranchIndex1);
+            newBranches.Add(newBranchIndex2);
+
+            branchCount += 2;
+
+            return newBranches;
         }
 
-        private static List<(string Variable, int InOut, double Remainder)> UpdateTableForBranch(List<(string Variable, int InOut, double Remainder)> table, string branchVariable, int inOutValue, LinearProgrammingModel model)
+        private static void UpdateTableForBranch(int branchIndex, string branchVariable, int inOutValue, LinearProgrammingModel model)
         {
-            return table.Select(v =>
-                (v.Variable, InOut: v.Variable == branchVariable ? inOutValue : v.InOut, Remainder: CalculateRemainder(v, branchVariable, inOutValue, model))
-            ).ToList();
-        }
+            int variableIndex = GetVariableIndex(branchVariable);
 
-        private static double CalculateRemainder((string Variable, int InOut, double Remainder) entry, string branchVariable, int inOutValue, LinearProgrammingModel model)
-        {
-            if (entry.Variable == branchVariable)
+            for (int i = 1; i < tableau.GetLength(1); i++) // Start from row 1 (excluding the objective function)
             {
-                return entry.Remainder; // Adjust based on problem constraints
-            }
-            else
-            {
-                // Adjust remainder based on constraint coefficients
-                return entry.Remainder; // Adjust as needed based on the problem constraints
+                tableau[branchIndex, i, tableau.GetLength(2) - 1] -= (inOutValue * model.A[i - 1, variableIndex]);
             }
         }
 
@@ -223,10 +236,9 @@ namespace LinearProgrammingSolver
             return tableBuilder.ToString();
         }
 
-        private static int GetVariableIndex(string variable)
+        private static int GetVariableIndex(string variableName)
         {
-            // Assume that variable names are in the form "x1", "x2", etc.
-            return int.Parse(variable.TrimStart('x')) - 1;
+            return int.Parse(variableName.Substring(1)) - 1;
         }
     }
 }

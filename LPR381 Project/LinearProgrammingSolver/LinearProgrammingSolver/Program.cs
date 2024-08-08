@@ -7,6 +7,8 @@ namespace LinearProgrammingSolver
 {
     class Program
     {
+        static LinearProgrammingModel optimalModel = null; // Global variable to store the optimal model
+
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to the Linear Programming Solver");
@@ -46,7 +48,15 @@ namespace LinearProgrammingSolver
                         SelectAlgorithm(model);
                         break;
                     case "2":
-                        SensitivityAnalysis.Perform(model);
+                        if (optimalModel != null)
+                        {
+                            // Perform sensitivity analysis only if the optimal table is available
+                            SensitivityAnalysis.Perform(optimalModel);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Please run an algorithm first to get the optimal table.");
+                        }
                         break;
                     case "3":
                         return;
@@ -59,12 +69,8 @@ namespace LinearProgrammingSolver
 
         static LinearProgrammingModel LoadModel()
         {
-            // const string basePath = "C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/Models";
-
-            // -> LO testing to see if the file path can be made to work with static path
             string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..","..","Models");
             basePath = Path.GetFullPath(basePath); // Resolve relative path to absolute
-            //<-
 
             try
             {
@@ -76,7 +82,7 @@ namespace LinearProgrammingSolver
                 }
                 
                 Console.WriteLine();
-                Console.WriteLine("Please select one of the available modals:");
+                Console.WriteLine("Please select one of the available models:");
                 for (int i = 0; i < files.Length; i++)
                 {
                     Console.WriteLine($"{i + 1}. {Path.GetFileName(files[i])}");
@@ -89,7 +95,6 @@ namespace LinearProgrammingSolver
                 {
                     var filePath = files[fileIndex - 1];
                     
-                    // Check if the model is a knapsack problem
                     if (filePath.ToLower().Contains("knapsack"))
                     {
                         var model = ReadKnapsackInput(filePath);
@@ -120,25 +125,18 @@ namespace LinearProgrammingSolver
         static LinearProgrammingModel ReadKnapsackInput(string filePath)
         {
             var lines = File.ReadAllLines(filePath);
-
-            // Determine if it's a max or min problem
             var firstLine = lines[0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             bool isMaximization = firstLine[0].ToLower() == "max";
-
-            // Parse objective function coefficients
             var objectiveCoefficients = firstLine.Skip(1).Select(double.Parse).ToArray();
-
-            // Initialize lists for constraints and RHS values
             var constraints = new List<double[]>();
             var rhs = new List<double>();
 
-            // Parse constraints
             foreach (var line in lines.Skip(1))
             {
                 var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length > 0 && (parts[0].StartsWith("x") || parts[0] == "bin"))
                 {
-                    break; // End of constraints
+                    break;
                 }
 
                 var constraint = parts.Take(parts.Length - 2).Select(double.Parse).ToArray();
@@ -146,12 +144,10 @@ namespace LinearProgrammingSolver
                 rhs.Add(double.Parse(parts.Last()));
             }
 
-            // Parse variable types
             var lastLine = lines.Last().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             var variables = lastLine.Take(lastLine.Length - 1).ToList();
-            var variableTypes = lastLine.Last(); // Should be "bin"
+            var variableTypes = lastLine.Last(); 
 
-            // Ensure binary constraints
             if (variableTypes != "bin")
             {
                 throw new ArgumentException("Variable type must be binary for knapsack problems.");
@@ -168,16 +164,12 @@ namespace LinearProgrammingSolver
                 }
             }
 
-            // Create List<int> for indices
             var variableIndices = Enumerable.Range(0, objectiveCoefficients.Length).ToList();
-
-            // Create List<string> for variable names
             var N = variables; 
 
-            // Assuming that the second constructor is appropriate
             return new LinearProgrammingModel(
-                B: variableIndices, // List<int> for indices
-                N: variables, // List<string> for names
+                B: variableIndices,
+                N: variables,
                 A: A,
                 cB: objectiveCoefficients,
                 cN: objectiveCoefficients,
@@ -199,19 +191,19 @@ namespace LinearProgrammingSolver
             switch (choice)
             {
                 case "1":                                        
-                    PrimalSimplex.Solve(model);
+                    optimalModel = PrimalSimplex.Solve(model); // Store optimal model
                     break;
                 case "2":
-                    RevisedSimplex.Solve(model);
+                    optimalModel = RevisedSimplex.Solve(model); // Store optimal model
                     break;
                 case "3":
-                    BranchAndBoundSimplex.Solve(model);
+                    optimalModel = BranchAndBoundSimplex.Solve(model); // Store optimal model
                     break;
                 case "4":
-                    CuttingPlane.Solve(model);
+                    optimalModel = CuttingPlane.Solve(model); // Store optimal model
                     break;
                 case "5":
-                    BranchAndBoundKnapsack.Solve(model); // Ensure knapsack algorithm is selected
+                    optimalModel = BranchAndBoundKnapsack.Solve(model); // Store optimal model
                     break;
                 default:
                     Console.WriteLine("Invalid choice, please try again.");

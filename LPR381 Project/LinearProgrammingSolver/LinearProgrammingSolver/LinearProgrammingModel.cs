@@ -7,6 +7,9 @@ namespace LinearProgrammingSolver
 {
     public class LinearProgrammingModel
     {
+        // Global variable to store the optimal model
+        public static LinearProgrammingModel OptimalModel { get; set; }
+
         public bool IsMaximization { get; set; }
         public List<double> ObjectiveCoefficients { get; set; }
         public List<List<double>> Constraints { get; set; }
@@ -33,8 +36,9 @@ namespace LinearProgrammingSolver
             SignRestrictions = new List<string>();
             SolutionRows = 0;
             SolutionColumns = 0;
-            Solution = new double[SolutionRows,SolutionColumns];
+            Solution = new double[SolutionRows, SolutionColumns];
         }
+
         public LinearProgrammingModel(List<int> B, List<string> N, double[,] A, double[] cB, double[] cN, double[] b)
         {
             this.B = B;
@@ -45,8 +49,7 @@ namespace LinearProgrammingSolver
             this.b = b;
         }
 
-
-        // ->LO 2024/08/05 Added new LPRModel
+        // Constructor for the knapsack problem
         public LinearProgrammingModel(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
         {
             ObjectiveCoefficients = new List<double>(cN);
@@ -64,7 +67,8 @@ namespace LinearProgrammingSolver
             RightHandSides = new List<double>(b);
             SignRestrictions = new List<string>(); 
         }
-        // ->LO 2024/08/05 Added new LPRModel
+
+        // Static method to read a knapsack problem from a file
         public static LinearProgrammingModel ReadKnapsackInput(string filePath)
         {
             var lines = File.ReadAllLines(filePath);
@@ -143,8 +147,6 @@ namespace LinearProgrammingSolver
             );
         }
 
-        //<-
-
         public void ParseInputFile(string filePath)
         {
             var lines = File.ReadAllLines(filePath);
@@ -191,7 +193,5 @@ namespace LinearProgrammingSolver
                 SignRestrictions.Add(parts[i]);
             }
         }
-
-
     }
 }
