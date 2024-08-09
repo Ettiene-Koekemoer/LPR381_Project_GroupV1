@@ -59,7 +59,6 @@ namespace LinearProgrammingSolver
             WriteResults(CreateVariableTable(0, model), bestSolution, bestObjectiveValue);
         }
 
-
         private static void ConvertToCanonicalForm(LinearProgrammingModel model, int branchIndex)
         {
             int rows = model.A.GetLength(0) + 1;
@@ -138,7 +137,8 @@ namespace LinearProgrammingSolver
 
         private static string GetBranchVariable(List<(string Variable, int InOut, double Remainder)> table)
         {
-            return table.FirstOrDefault(v => v.Remainder <= 0).Variable;
+            var branchCandidate = table.FirstOrDefault(v => v.Remainder <= 0);
+            return branchCandidate != default ? branchCandidate.Variable : null;
         }
 
         private static List<int> CreateBranches(int currentBranch, string branchVariable, LinearProgrammingModel model)
@@ -155,11 +155,12 @@ namespace LinearProgrammingSolver
 
             // Create a new larger tableau array
             double[,,] newTableau = new double[branchCount + 2, rows, columns];
-            Array.Copy(tableau, newTableau, branchCount * rows * columns);
+            Array.Copy(tableau, newTableau, tableau.Length); // Correctly copy the entire 3D array
             tableau = newTableau;
 
             // Initialize new branches
-            Array.Copy(tableau[currentBranch], tableau[newBranchIndex1], rows * columns);
+            Array.Copy(tableau, currentBranch * rows * columns, tableau, newBranchIndex1 * rows * columns, rows * columns);
+            Array.Copy(tableau, currentBranch * rows * columns, tableau, newBranchIndex2 * rows * columns, rows * columns);
 
             // Update tableau for the new branches
             UpdateTableForBranch(newBranchIndex1, branchVariable, 0, model);

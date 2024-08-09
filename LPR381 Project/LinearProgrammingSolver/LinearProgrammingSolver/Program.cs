@@ -51,7 +51,7 @@ namespace LinearProgrammingSolver
                         if (optimalModel != null)
                         {
                             // Perform sensitivity analysis only if the optimal table is available
-                            SensitivityAnalysis.Perform(optimalModel);
+                            // SensitivityAnalysis.Perform(optimalModel);
                         }
                         else
                         {
@@ -191,19 +191,19 @@ namespace LinearProgrammingSolver
             switch (choice)
             {
                 case "1":                                        
-                    optimalModel = PrimalSimplex.Solve(model); // Store optimal model
+                    PrimalSimplex.Solve(model);
                     break;
                 case "2":
-                    optimalModel = RevisedSimplex.Solve(model); // Store optimal model
+                    RevisedSimplex.Solve(model);
                     break;
                 case "3":
-                    optimalModel = BranchAndBoundSimplex.Solve(model); // Store optimal model
+                    BranchAndBoundSimplex.Solve(model);
                     break;
                 case "4":
-                    optimalModel = CuttingPlane.Solve(model); // Store optimal model
+                    CuttingPlane.Solve(model);
                     break;
                 case "5":
-                    optimalModel = BranchAndBoundKnapsack.Solve(model); // Store optimal model
+                    BranchAndBoundKnapsack.Solve(model);
                     break;
                 default:
                     Console.WriteLine("Invalid choice, please try again.");
