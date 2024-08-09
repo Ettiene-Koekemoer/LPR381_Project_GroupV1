@@ -17,26 +17,23 @@ namespace LinearProgrammingSolver
 
         public static void Solve(LinearProgrammingModel model)
         {
-            int rows = 3; // We will store Variable, InOut, and Remainder for each variable
-            int columns = model.cN.Length; // Columns for each variable
+            int rows = 3;
+            int columns = model.cN.Length;
             tableau = new double[rows, columns];
 
             Console.WriteLine("Starting conversion to canonical form...");
-            // Convert the model to the canonical form
             ConvertToCanonicalForm(model);
             Console.WriteLine("Canonical form conversion complete.");
 
-            // Initialize best solution variables
             double bestObjectiveValue = double.NegativeInfinity;
             List<(string Variable, int InOut, double Remainder)> bestSolution = null;
 
             var branches = new Queue<int>();
-            branches.Enqueue(0); // Start with branch 0
+            branches.Enqueue(0);
 
             Console.WriteLine("Starting branch processing...");
-            int iterationCount = 0; // Counter for iterations
+            int iterationCount = 0;
 
-            // Process branches
             while (branches.Count > 0 && iterationCount < MaxIterations)
             {
                 int currentBranch = branches.Dequeue();
@@ -46,7 +43,6 @@ namespace LinearProgrammingSolver
                 Console.WriteLine("Current table:");
                 PrintTable(currentTable);
 
-                // Save the current iteration
                 iterationResults.Add(new List<(string Variable, int InOut, double Remainder)>(currentTable));
                 iterationCount++;
 
@@ -71,7 +67,11 @@ namespace LinearProgrammingSolver
                         var newBranches = CreateBranches(branchVariable, model);
                         foreach (var newBranch in newBranches)
                         {
-                            branches.Enqueue(newBranch);
+                            if (!processedBranches.Contains(newBranch.ToString()))
+                            {
+                                branches.Enqueue(newBranch);
+                                processedBranches.Add(newBranch.ToString());
+                            }
                         }
                     }
                 }
@@ -118,7 +118,7 @@ namespace LinearProgrammingSolver
             int numVariables = model.cN.Length;
             for (int j = 0; j < numVariables; j++)
             {
-                double ratio = tableau[0, j] / tableau[1, j];
+                double ratio = tableau[0, j] / (tableau[1, j] == 0 ? 1 : tableau[1, j]); // Avoid division by zero
                 variableTable.Add(($"x{j + 1}", ratio, 0));
             }
 
@@ -175,7 +175,15 @@ namespace LinearProgrammingSolver
 
         private static double CalculateObjectiveValue(List<(string Variable, int InOut, double Remainder)> table, LinearProgrammingModel model)
         {
-            return table.Where(v => v.InOut == 1).Sum(v => model.cN[GetVariableIndex(v.Variable)]);
+            double objectiveValue = 0.0;
+            // Compute objective value
+            foreach (var entry in table)
+            {
+                int variableIndex = GetVariableIndex(entry.Variable);
+                objectiveValue += model.cN[variableIndex] * entry.InOut;
+            }
+
+            return objectiveValue;
         }
 
         private static string GetBranchVariable(List<(string Variable, int InOut, double Remainder)> table)
@@ -188,10 +196,11 @@ namespace LinearProgrammingSolver
         {
             var newBranches = new List<int>();
 
-            // Create branches for In/Out = 0 and 1
-            UpdateTableForBranch(branchVariable, 0, model);
+            // Example for branching on x3
+            UpdateTableForBranch(branchVariable, 0, model); // Create a branch with x3 = 0
             newBranches.Add(branchCount++);
-            UpdateTableForBranch(branchVariable, 1, model);
+
+            UpdateTableForBranch(branchVariable, 1, model); // Create a branch with x3 = 1
             newBranches.Add(branchCount++);
 
             return newBranches;
@@ -200,91 +209,40 @@ namespace LinearProgrammingSolver
         private static void UpdateTableForBranch(string branchVariable, int inOutValue, LinearProgrammingModel model)
         {
             int variableIndex = GetVariableIndex(branchVariable);
-            int numVariables = model.cN.Length;
 
-            // Update the In/Out column
+            // Update table logic
             tableau[1, variableIndex] = inOutValue;
 
-            // Update the Remainder column iteratively
             double remainder = model.b[0];
-
-            for (int j = 0; j < numVariables; j++)
+            for (int j = 0; j < tableau.GetLength(1); j++)
             {
-                if (inOutValue == 0)
-                {
-                    // When In/Out is 0, the coefficient of this variable should not be subtracted
-                    tableau[2, j] = remainder;
-                }
-                else
-                {
-                    // Subtract the coefficient of the variable from the remainder
-                    remainder -= model.A[0, j] * inOutValue;
-                    tableau[2, j] = remainder;
-
-                    // Stop branching if remainder becomes zero or negative
-                    if (remainder <= 0)
-                    {
-                        break;
-                    }
-                }
+                remainder -= model.A[0, j] * inOutValue;
+                tableau[2, j] = remainder;
             }
-
-            Console.WriteLine($"Updated table for branch variable {branchVariable} with In/Out value {inOutValue}:");
-            PrintTable(ConvertTableToList(model));
         }
 
         private static void WriteResults(List<(string Variable, double Ratio, int Rank)> variableTable, List<(string Variable, int InOut, double Remainder)> bestSolution, double bestObjectiveValue)
         {
-            string outputPath = "C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/Output.txt";
-            using (var writer = new StreamWriter(outputPath))
+            var output = new StringBuilder();
+            output.AppendLine("Variable Table:");
+            foreach (var entry in variableTable)
             {
-                writer.WriteLine("Variable Table:");
-                writer.WriteLine(BuildVariableTableFromList(variableTable));
+                output.AppendLine($"{entry.Variable,10} {entry.Ratio,10:F3} {entry.Rank,10}");
+            }
 
-                writer.WriteLine("Iterations:");
-                foreach (var iteration in iterationResults)
+            output.AppendLine("\nIterations:");
+            foreach (var iteration in iterationResults)
+            {
+                output.AppendLine("Iteration:");
+                foreach (var entry in iteration)
                 {
-                    writer.WriteLine("Iteration:");
-                    writer.WriteLine(BuildTableFromList(iteration));
+                    output.AppendLine($"{entry.Variable,10} {entry.InOut,10} {entry.Remainder,10:F3}");
                 }
-
-                writer.WriteLine("Best Solution:");
-                writer.WriteLine(BuildTableFromList(bestSolution ?? new List<(string Variable, int InOut, double Remainder)>()));
-                writer.WriteLine($"Best Objective Value: {bestObjectiveValue:F3}");
             }
 
-            Console.WriteLine($"Results written to {outputPath}");
-        }
+            output.AppendLine($"\nBest Objective Value: {bestObjectiveValue:F3}");
 
-        private static string BuildVariableTableFromList(List<(string Variable, double Ratio, int Rank)> table)
-        {
-            StringBuilder tableBuilder = new StringBuilder();
-            tableBuilder.AppendLine($"{"Variable",10} {"Ratio",10} {"Rank",10}");
-
-            foreach (var entry in table)
-            {
-                tableBuilder.AppendLine($"{entry.Variable,10} {entry.Ratio,10:F3} {entry.Rank,10}");
-            }
-
-            return tableBuilder.ToString();
-        }
-
-        private static string BuildTableFromList(List<(string Variable, int InOut, double Remainder)> table)
-        {
-            if (table == null)
-            {
-                throw new ArgumentNullException(nameof(table), "The table cannot be null.");
-            }
-
-            StringBuilder tableBuilder = new StringBuilder();
-            tableBuilder.AppendLine($"{"Variable",10} {"In/Out",10} {"Remainder",10}");
-
-            foreach (var entry in table)
-            {
-                tableBuilder.AppendLine($"{entry.Variable,10} {entry.InOut,10} {entry.Remainder,10:F3}");
-            }
-
-            return tableBuilder.ToString();
+            File.WriteAllText("output.txt", output.ToString());
         }
 
         private static int GetVariableIndex(string variableName)

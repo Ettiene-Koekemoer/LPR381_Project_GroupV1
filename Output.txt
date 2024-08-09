@@ -183,6 +183,183 @@ Iteration:
         x2          1      2,000
         x3          1     -2,000
 
+Iteration:
+  Variable     In/Out  Remainder
+        x1          5    -11,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          7    -40,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          4    -14,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
+Iteration:
+  Variable     In/Out  Remainder
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+
 Best Solution:
   Variable     In/Out  Remainder
 
