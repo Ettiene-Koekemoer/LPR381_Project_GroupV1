@@ -63,7 +63,7 @@ namespace LinearProgrammingSolver
                             Console.ReadLine();
                             break;
                         case "8":
-                            ApplyNonBasicVariableColumnChange(optimalSolution);
+                            ApplyNonBasicVariableColumnChange(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "9":
@@ -100,9 +100,7 @@ namespace LinearProgrammingSolver
 
         private static void DisplayNonBasicVariableRange(double[,] solutionTableau, LinearProgrammingModel model)
         {
-            // Implement the logic to display the range of a selected Non-Basic Variable
-            var example = Init(model, solutionTableau, "cbvb-");
-            DisplayTableau(example);
+            // Implement the logic to display the range of a selected Non-Basic Variable            
         }
 
         private static void ApplyNonBasicVariableChange(double[,] solutionTableau, LinearProgrammingModel model)
@@ -185,8 +183,6 @@ namespace LinearProgrammingSolver
         private static void DisplayBasicVariableRange(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to display the range of a selected Basic Variable
-            var example = Init(model, solutionTableau, "b");
-            DisplayTableau(example);
         }
 
         private static void ApplyBasicVariableChange(double[,] solutionTableau, LinearProgrammingModel model)
@@ -386,10 +382,103 @@ namespace LinearProgrammingSolver
             // Implement the logic to display the range of a selected constraint right-hand-side value
         }
 
-        private static void ApplyNonBasicVariableColumnChange(double[,] solutionTableau)
+        private static void ApplyNonBasicVariableColumnChange(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to apply and display a change of a selected constraint right-hand-side value
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] a = new double[iTableau.GetLength(0) - 1, 1];
+            var bv = FindBV(solutionTableau);
 
+            Console.WriteLine("Select the constraint you wish to change:");
+            for (int i = 1; i < iTableau.GetLength(0); i++)
+            {
+                Console.Write($"{i}. ");
+                for (int j = 0; j < iTableau.GetLength(1)-1; j++)
+                {
+                    Console.Write($"{iTableau[i,j]}  ");
+                }
+                Console.WriteLine();
+            }
+            var choicei = Console.ReadLine();
+            int choiceIndexi;
+            //possible valid input verifying
+            if (int.TryParse(choicei, out choiceIndexi)) { }
+            else
+            {
+                while (!(int.TryParse(choicei, out choiceIndexi)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choicei = Console.ReadLine();
+                }
+            }
+            Console.WriteLine("Select a non basic variable constraint coeffiecient to change:");
+            for (int j = 0; j < iTableau.GetLength(1); j++)
+            {
+                if (!bv.Contains(j))
+                {
+                    Console.WriteLine($"{j}. {iTableau[choiceIndexi,j]}");
+                }
+            }
+            var choicej = Console.ReadLine();
+            int choiceIndexj;
+            if (int.TryParse(choicej, out choiceIndexj)) { }
+            else
+            {
+                while (!(int.TryParse(choicej, out choiceIndexj)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choicej = Console.ReadLine();
+                }
+            }
+
+            Console.WriteLine("Enter the new coefficient value:");
+            var input = Console.ReadLine();
+            double value;
+            if (double.TryParse(input, out value)) { }
+            else
+            {
+                while (!(double.TryParse(input, out value)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid double value.");
+                    input = Console.ReadLine();
+                }
+            }
+
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");
+            double[,] b = Init(model, solutionTableau, "b-");
+            for (int i = 1; i < iTableau.GetLength(0); i++)
+            {
+                a[i - 1, 0] = iTableau[i, choiceIndexj];
+            }
+            a[choiceIndexi - 1, 0] = value;
+            double[,] newC = new double[1, 1];
+            newC = (MultiplyMatrices(cbvb, a));
+            newC[0, 0] = Math.Round((newC[0, 0] - iTableau[0, choiceIndexj]), 3);
+            
+            double[,] newA = new double[a.GetLength(0), 1];
+            newA = MultiplyMatrices(b, a);
+
+            solutionTableau[0, choiceIndexj] = newC[0, 0];
+            for (int i = 1; i < solutionTableau.GetLength(0); i++)
+            {
+                solutionTableau[i,choiceIndexj] = newA[i - 1,0];
+            }
+            while (true)
+            {
+                int pivotColumn = SelectPivotColumn(solutionTableau, model);
+                if (pivotColumn == -1)
+                    break; // Optimal solution found
+
+                int pivotRow = SelectPivotRow(solutionTableau, pivotColumn);
+                if (pivotRow == -1)
+                {
+                    Console.WriteLine("Unbounded solution.");
+                    return;
+                }
+
+                Pivot(solutionTableau, pivotRow, pivotColumn);
+            }
+            DisplayTableau(solutionTableau);
         }
 
         private static void AddNewActivity(double[,] solutionTableau)
