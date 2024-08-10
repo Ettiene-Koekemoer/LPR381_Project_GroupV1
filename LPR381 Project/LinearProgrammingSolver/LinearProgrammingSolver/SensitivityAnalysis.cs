@@ -67,15 +67,15 @@ namespace LinearProgrammingSolver
                             Console.ReadLine();
                             break;
                         case "9":
-                            AddNewActivity(optimalSolution);
+                            AddNewActivity(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "10":
-                            AddNewConstraint(optimalSolution);
+                            AddNewConstraint(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "11":
-                            DisplayShadowPrices(optimalSolution);
+                            DisplayShadowPrices(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "12":
@@ -401,7 +401,6 @@ namespace LinearProgrammingSolver
             }
             var choicei = Console.ReadLine();
             int choiceIndexi;
-            //possible valid input verifying
             if (int.TryParse(choicei, out choiceIndexi)) { }
             else
             {
@@ -481,24 +480,231 @@ namespace LinearProgrammingSolver
             DisplayTableau(solutionTableau);
         }
 
-        private static void AddNewActivity(double[,] solutionTableau)
+        private static void AddNewActivity(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to add a new activity to an optimal solution
+            Console.WriteLine("Enter the objective coefficient for new activity:");
+            var objVali = Console.ReadLine();
+            double objVal;
+            if (double.TryParse(objVali, out objVal)) { }
+            else
+            {
+                while (!(double.TryParse(objVali, out objVal)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid double value.");
+                    objVali = Console.ReadLine();
+                }
+            }
+            double[,] conVals = new double[solutionTableau.GetLength(0)-1,1];
+            for (int i = 1; i < solutionTableau.GetLength(0); i++)
+            {
+                Console.WriteLine($"Enter the coefficient of constraint {i} for new activity:");
+                var conVali = Console.ReadLine();
+                double conVal;
+                if (double.TryParse(conVali, out conVal)) { }
+                else
+                {
+                    while (!(double.TryParse(conVali, out conVal)))
+                    {
+                        Console.WriteLine("Invalid input. Please enter a valid double value.");
+                        conVali = Console.ReadLine();
+                    }
+                }
+                conVals[i-1,0] = conVal;
+            }
+
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");
+            double[,] b = Init(model, solutionTableau, "b-");
+            double[,] newC = new double[1, 1];
+            newC = MultiplyMatrices(cbvb, conVals);
+            newC[0, 0] = Math.Round((newC[0, 0] - objVal), 3);
+
+            double[,] newA = new double[conVals.GetLength(0), 1];
+            newA = MultiplyMatrices(b, conVals);
+
+            double[] newCol = new double[conVals.GetLength(0)+1];
+            newCol[0] = newC[0,0];
+            for (int i = 1; i < solutionTableau.GetLength(0); i++)
+            {
+                newCol[i] = newA[i-1,0];
+            }
+            
+            double[,] addedActivityTableau = InsertColumn(solutionTableau, newCol, model.ObjectiveCoefficients.Count - 1);
+
+            while (true)
+            {
+                int pivotColumn = SelectPivotColumn(addedActivityTableau, model);
+                if (pivotColumn == -1)
+                    break; // Optimal solution found
+
+                int pivotRow = SelectPivotRow(addedActivityTableau, pivotColumn);
+                if (pivotRow == -1)
+                {
+                    Console.WriteLine("Unbounded solution.");
+                    return;
+                }
+
+                Pivot(addedActivityTableau, pivotRow, pivotColumn);
+            }
+            DisplayTableau(addedActivityTableau);
         }
 
-        private static void AddNewConstraint(double[,] solutionTableau)
+        private static void AddNewConstraint(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to add a new constraint to an optimal solution
+            var bv = FindBV(solutionTableau);
+            solutionTableau = AddZeroColumn(solutionTableau);
+            double[] conVals = new double[solutionTableau.GetLength(1)];
+            for (int i = 0; i < model.ObjectiveCoefficients.Count; i++)
+            {
+                Console.WriteLine($"Enter the coefficient of variable {i+1} for new constraint:");
+                var conVali = Console.ReadLine();
+                double conVal;
+                if (double.TryParse(conVali, out conVal)) { }
+                else
+                {
+                    while (!(double.TryParse(conVali, out conVal)))
+                    {
+                        Console.WriteLine("Invalid input. Please enter a valid double value.");
+                        conVali = Console.ReadLine();
+                    }
+                }                
+                conVals[i] = conVal;
+            }
+            solutionTableau = AddConstraint(solutionTableau, conVals);
+            
+            Console.WriteLine($"Enter the sign restriction for new constraint:");
+            string sign = Console.ReadLine() ?? "<=";
+            switch (sign)
+            {
+                case "<=":
+                    solutionTableau[solutionTableau.GetLength(0) - 1, solutionTableau.GetLength(1) - 2] = 1;
+                    Console.WriteLine($"Enter the RHS for new constraint:");
+                    var rhssi = Console.ReadLine();
+                    double rhss;
+                    if (double.TryParse(rhssi, out rhss)) { }
+                    else
+                    {
+                        while (!(double.TryParse(rhssi, out rhss)))
+                        {
+                            Console.WriteLine("Invalid input. Please enter a valid double value.");
+                            rhssi = Console.ReadLine();
+                        }
+                    }
+                    solutionTableau[solutionTableau.GetLength(0) - 1, solutionTableau.GetLength(1) - 1] = rhss;
+                    for (int i = 0; i < solutionTableau.GetLength(1); i++)
+                    {
+                        // Check if the value in the last row is not zero and the column index is in the list 'bv'
+                        if (solutionTableau[solutionTableau.GetLength(0) - 1, i] != 0 && bv.Contains(i))
+                        {
+                            int rowIndex = FindRowWithOne(solutionTableau, i);
+                            if (rowIndex != -1) // Ensure that a row with a 1 was found
+                            {
+                                for (int j = 0; j < solutionTableau.GetLength(1); j++)
+                                {
+                                    solutionTableau[solutionTableau.GetLength(0) - 1, j] -= solutionTableau[rowIndex, j];
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case ">=":
+                    solutionTableau[solutionTableau.GetLength(0) - 1, solutionTableau.GetLength(1) - 2] = -1;
+                    Console.WriteLine($"Enter the RHS for new constraint:");
+                    var rhsei = Console.ReadLine();
+                    double rhse;
+                    if (double.TryParse(rhsei, out rhse)) { }
+                    else
+                    {
+                        while (!(double.TryParse(rhsei, out rhse)))
+                        {
+                            Console.WriteLine("Invalid input. Please enter a valid double value.");
+                            rhsei = Console.ReadLine();
+                        }
+                    }
+                    solutionTableau[solutionTableau.GetLength(0) - 1, solutionTableau.GetLength(1) - 1] = rhse;
+                    for (int i = 0; i < solutionTableau.GetLength(1); i++)
+                    {
+                        solutionTableau[solutionTableau.GetLength(0)-1, i] *= -1;
+                    }
+                    for (int i = 0; i < solutionTableau.GetLength(1); i++)
+                    {
+                        // Check if the value in the last row is not zero and the column index is in the list 'bv'
+                        if (solutionTableau[solutionTableau.GetLength(0) - 1, i] != 0 && bv.Contains(i))
+                        {
+                            int rowIndex = FindRowWithOne(solutionTableau, i);
+                            if (rowIndex != -1) // Ensure that a row with a 1 was found
+                            {
+                                for (int j = 0; j < solutionTableau.GetLength(1); j++)
+                                {
+                                    solutionTableau[solutionTableau.GetLength(0) - 1, j] += solutionTableau[rowIndex, j];
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case "=":
+                    break;
+            }
+            while (true)
+            {
+                int pivotDualRow = SelectDualPivotRow(solutionTableau);
+                if (pivotDualRow == -1)
+                    break; // Optimal solution found
+                int pivotDualColumn = SelectDualPivotColumn(solutionTableau, pivotDualRow);
+                if (pivotDualColumn == -1)
+                {
+                    Console.WriteLine("Infeasible solution.");
+                    return;
+                }
+
+                Pivot(solutionTableau, pivotDualRow, pivotDualColumn);
+            }
+            while (true)
+            {
+                int pivotColumn = SelectPivotColumn(solutionTableau, model);
+                if (pivotColumn == -1)
+                    break; // Optimal solution found
+
+                int pivotRow = SelectPivotRow(solutionTableau, pivotColumn);
+                if (pivotRow == -1)
+                {
+                    Console.WriteLine("Unbounded solution.");
+                    return;
+                }
+
+                Pivot(solutionTableau, pivotRow, pivotColumn);
+            }
+            DisplayTableau(solutionTableau);
         }
 
-        private static void DisplayShadowPrices(double[,] tableau/*, double[,] solutionTableau*/)
+        private static void DisplayShadowPrices(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to display the shadow prices
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");
+            
+            for (int i = 0; i < cbvb.GetLength(1); i++)
+            {
+                Console.WriteLine($"Shadow price for constraint {i + 1} is {cbvb[0,i]}");
+            }
+
+            /*double[,] b = Init(model, solutionTableau, "b");
+
+            var oldZ = MultiplyMatrices(cbvb, b);
+
+            for (int i = 0; i < b.GetLength(0); i++)
+            {
+                b[i, 0] += 1;
+                var newZ = MultiplyMatrices(cbvb, b);
+                Console.WriteLine($"Shadow price for constraint {i + 1} is {newZ[0, 0] - oldZ[0, 0]}");
+            }*/       
         }
 
         private static void PerformDuality(double[,] tableau)
         {
             // Implement the logic to solve the Dual Programming Model
+
         }
 
         private static double[,] Init(LinearProgrammingModel model, double[,] solutionTableau, string table)
@@ -618,6 +824,14 @@ namespace LinearProgrammingSolver
                     {
                         result[i, j] += matrixA[i, k] * matrixB[k, j];
                     }
+                }
+            }
+
+            for (int i = 0; i < result.GetLength(0); i++)
+            {
+                for (int j = 0; j < result.GetLength(1); j++)
+                {
+                    result[i, j] = Math.Round(result[i, j], 3);
                 }
             }
 
@@ -848,6 +1062,106 @@ namespace LinearProgrammingSolver
                 }
             }
             return pivotColumn;
+        }
+
+        public static double[,] InsertColumn(double[,] original, double[] newColumn, int insertAfter)
+        {
+            int rows = original.GetLength(0);
+            int columns = original.GetLength(1);
+
+            // Create a new array with one additional column
+            double[,] newArray = new double[rows, columns + 1];
+
+            for (int i = 0; i < rows; i++)
+            {
+                int newColumnIndex = 0;
+
+                for (int j = 0; j < columns + 1; j++)
+                {
+                    if (j == insertAfter + 1)
+                    {
+                        // Insert the new column after the specified index
+                        newArray[i, j] = newColumn[i];
+                    }
+                    else
+                    {
+                        // Copy existing data from the original array
+                        newArray[i, j] = original[i, newColumnIndex];
+                        newColumnIndex++;
+                    }
+                }
+            }
+
+            return newArray;
+        }
+
+        static double[,] AddConstraint(double[,] originalArray, double[] newRow)
+        {
+            int originalRows = originalArray.GetLength(0);
+            int originalCols = originalArray.GetLength(1);
+
+            // Create a new array with an additional row
+            double[,] newArray = new double[originalRows + 1, originalCols];
+
+            // Copy the original array values to the new array
+            for (int i = 0; i < originalRows; i++)
+            {
+                for (int j = 0; j < originalCols; j++)
+                {
+                    newArray[i, j] = originalArray[i, j];
+                }
+            }
+
+            // Add the new row to the new array
+            for (int j = 0; j < originalCols; j++)
+            {
+                newArray[originalRows, j] = newRow[j];
+            }
+
+            return newArray;
+        }
+
+        static double[,] AddZeroColumn(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] newMatrix = new double[rows, cols + 1];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols + 1; j++)
+                {
+                    if (j == cols - 1)
+                    {
+                        newMatrix[i, j] = 0;
+                    }
+                    else if (j < cols - 1)
+                    {
+                        newMatrix[i, j] = matrix[i, j];
+                    }
+                    else
+                    {
+                        newMatrix[i, j] = matrix[i, j - 1];
+                    }
+                }
+            }
+
+            return newMatrix;
+        }
+
+        public static int FindRowWithOne(double[,] array, int columnIndex)
+        {
+            int rows = array.GetLength(0);
+
+            for (int i = 0; i < rows; i++)
+            {
+                if (array[i, columnIndex] == 1.0)
+                {
+                    return i;
+                }
+            }
+
+            return -1; // Return -1 if no 1.0 is found in the column
         }
     }
 }
