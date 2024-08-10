@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace LinearProgrammingSolver
 {
@@ -46,7 +47,7 @@ namespace LinearProgrammingSolver
                             Console.ReadLine();
                             break;
                         case "4":
-                            ApplyBasicVariableChange(optimalSolution);
+                            ApplyBasicVariableChange(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "5":
@@ -107,8 +108,78 @@ namespace LinearProgrammingSolver
         private static void ApplyNonBasicVariableChange(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to apply and display a change of a selected Non-Basic Variable
-            var example = Init(model, solutionTableau, "b-");
-            DisplayTableau(example);
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] a = new double[iTableau.GetLength(0) - 1, 1];
+            var bv = FindBV(solutionTableau);
+
+            Console.WriteLine("Select a non basic variable coeffiecient to change:");
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+            {
+                if (!bv.Contains(j))
+                {
+                    Console.WriteLine($"{j}. {model.ObjectiveCoefficients[j]}");
+                }
+            }
+            var choice = Console.ReadLine();
+            int choiceIndex;
+            //possible valid input verifying
+            if (int.TryParse(choice, out choiceIndex))
+            {
+                //
+            }
+            else
+            {
+                while (!(int.TryParse(choice, out choiceIndex)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choice = Console.ReadLine();
+                }
+            }
+
+            Console.WriteLine("Enter the new coefficient value:");
+            var input = Console.ReadLine();
+            double value;
+            if (double.TryParse(input, out value))
+            {
+                //
+            }
+            else
+            {
+                while (!(double.TryParse(input, out value)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid double value.");
+                    input = Console.ReadLine();
+                }
+            }
+
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");
+            int varIndex = choiceIndex;
+            for (int i = 1; i < iTableau.GetLength(0); i++)
+            {
+                a[i - 1, 0] = iTableau[i, varIndex];
+            }
+            double[,] newC = new double[1, 1];
+            newC = (MultiplyMatrices(cbvb, a));
+            newC[0,0] = Math.Round((newC[0,0] - value),3);
+
+            solutionTableau[0,varIndex] = newC[0,0];
+            DisplayTableau(solutionTableau);
+            while (true)
+            {
+                int pivotColumn = SelectPivotColumn(solutionTableau, model);
+                if (pivotColumn == -1)
+                    break; // Optimal solution found
+
+                int pivotRow = SelectPivotRow(solutionTableau, pivotColumn);
+                if (pivotRow == -1)
+                {
+                    Console.WriteLine("Unbounded solution.");
+                    return;
+                }
+
+                Pivot(solutionTableau, pivotRow, pivotColumn);
+            }
+            DisplayTableau(solutionTableau);
         }
 
         private static void DisplayBasicVariableRange(double[,] solutionTableau, LinearProgrammingModel model)
@@ -118,9 +189,110 @@ namespace LinearProgrammingSolver
             DisplayTableau(example);
         }
 
-        private static void ApplyBasicVariableChange(double[,] solutionTableau)
+        private static void ApplyBasicVariableChange(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to apply and display a change of a selected Basic Variable
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] a = new double[iTableau.GetLength(0) - 1, 1];
+            var bv = FindBV(solutionTableau);
+
+            Console.WriteLine("Select a basic variable coeffiecient to change:");
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+            {
+                if (bv.Contains(j))
+                {
+                    Console.WriteLine($"{j}. {model.ObjectiveCoefficients[j]}");
+                }
+            }
+            var choice = Console.ReadLine();
+            int choiceIndex;
+            //possible valid input verifying
+            if (int.TryParse(choice, out choiceIndex))
+            {
+                //
+            }
+            else
+            {
+                while (!(int.TryParse(choice, out choiceIndex)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choice = Console.ReadLine();
+                }
+            }
+
+            Console.WriteLine("Enter the new coefficient value:");
+            var input = Console.ReadLine();
+            double value;
+            if (double.TryParse(input, out value))
+            {
+                //
+            }
+            else
+            {
+                while (!(double.TryParse(input, out value)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid double value.");
+                    input = Console.ReadLine();
+                }
+            }
+
+            model.ObjectiveCoefficients[choiceIndex] = value;
+
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");
+            double[,] newC = new double[1, 1];
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+            {
+                for (int i = 1; i < iTableau.GetLength(0); i++)
+                {
+                    a[i - 1, 0] = iTableau[i, j];
+                }
+                newC = (MultiplyMatrices(cbvb, a));
+                if (j == choiceIndex)
+                {
+                    newC[0, 0] = Math.Round((newC[0, 0] - value), 3);
+                }
+                else
+                {
+                    newC[0, 0] = Math.Round((newC[0, 0] - iTableau[0, j]), 3);
+                }                
+                solutionTableau[0, j] = newC[0, 0];
+            }
+
+            List<int> counts = GetOperatorCounts(model);
+            // Output the counts
+            for (int i = 0; i < model.ConstraintOperators.Count; i++)
+            {
+                if (model.ConstraintOperators[i] == ">=")
+                {
+                    solutionTableau[0, model.ObjectiveCoefficients.Count + i] = -(cbvb[0, counts[i] - 1]);
+                }
+                else
+                {
+                    solutionTableau[0, model.ObjectiveCoefficients.Count + i] = cbvb[0, counts[i] - 1];
+                }                
+            }
+
+            double[,] b = Init(model, solutionTableau, "b");
+            double[,] z = new double[1, 1];
+            z = MultiplyMatrices(cbvb,b);          
+            solutionTableau[0, solutionTableau.GetLength(1) - 1] = z[0, 0];
+
+            while (true)
+            {
+                int pivotColumn = SelectPivotColumn(solutionTableau, model);
+                if (pivotColumn == -1)
+                    break; // Optimal solution found
+
+                int pivotRow = SelectPivotRow(solutionTableau, pivotColumn);
+                if (pivotRow == -1)
+                {
+                    Console.WriteLine("Unbounded solution.");
+                    return;
+                }
+
+                Pivot(solutionTableau, pivotRow, pivotColumn);
+            }
+            DisplayTableau(solutionTableau);
         }
 
         private static void DisplayConstraintRHSRange(double[,] solutionTableau)
@@ -131,6 +303,7 @@ namespace LinearProgrammingSolver
         private static void ApplyConstraintRHSChange(double[,] solutionTableau)
         {
             // Implement the logic to apply and display a change of a selected constraint right-hand-side value
+
         }
 
         private static void DisplayNonBasicVariableColumnRange(double[,] solutionTableau)
@@ -383,6 +556,99 @@ namespace LinearProgrammingSolver
             }
 
             return sortedColumnIndexes;
+        }
+
+        private static int SelectPivotColumn(double[,] tableau, LinearProgrammingModel model)
+        {
+            int pivotColumn = -1;
+            if (model.IsMaximization)
+            {
+                double minValue = 0;
+                for (int j = 0; j < tableau.GetLength(1) - 1; j++)
+                {
+                    if (tableau[0, j] < minValue)
+                    {
+                        minValue = tableau[0, j];
+                        pivotColumn = j;
+                    }
+                }
+            }
+            else
+            {
+                double maxValue = 0;
+                for (int j = 0; j < tableau.GetLength(1) - 1; j++)
+                {
+                    if (tableau[0, j] > maxValue)
+                    {
+                        maxValue = tableau[0, j];
+                        pivotColumn = j;
+                    }
+                }
+            }
+            return pivotColumn;
+        }
+
+        private static int SelectPivotRow(double[,] tableau, int pivotColumn)
+        {
+            int pivotRow = -1;
+            double minRatio = double.PositiveInfinity;
+            for (int i = 1; i < tableau.GetLength(0); i++)
+            {
+                if (tableau[i, pivotColumn] > 0)
+                {
+                    double ratio = tableau[i, tableau.GetLength(1) - 1] / tableau[i, pivotColumn];
+                    if (ratio < minRatio)
+                    {
+                        minRatio = ratio;
+                        pivotRow = i;
+                    }
+                }
+            }
+            return pivotRow;
+        }
+
+        private static void Pivot(double[,] tableau, int pivotRow, int pivotColumn)
+        {
+            double pivotValue = tableau[pivotRow, pivotColumn];
+            for (int j = 0; j < tableau.GetLength(1); j++)
+                tableau[pivotRow, j] /= pivotValue;
+
+            for (int i = 0; i < tableau.GetLength(0); i++)
+            {
+                if (i != pivotRow)
+                {
+                    double factor = tableau[i, pivotColumn];
+                    for (int j = 0; j < tableau.GetLength(1); j++)
+                        tableau[i, j] -= factor * tableau[pivotRow, j];
+                }
+            }
+        }
+
+        public static List<int> GetOperatorCounts(LinearProgrammingModel model)
+        {
+            Dictionary<string, int> operatorCount = new Dictionary<string, int>()
+            {
+                { "<=", 0 },
+                { ">=", 0 }
+            };
+
+            List<int> counts = new List<int>();
+
+            foreach (var op in model.ConstraintOperators)
+            {
+                if (operatorCount.ContainsKey(op))
+                {
+                    operatorCount[op]++;
+                    counts.Add(operatorCount[op]);
+                }
+                else
+                {
+                    // Handle unexpected operators if necessary
+                    counts.Add(0); // Or throw an exception, or handle it in another way
+                }
+            }
+
+            return counts;
         }
     }
 }
