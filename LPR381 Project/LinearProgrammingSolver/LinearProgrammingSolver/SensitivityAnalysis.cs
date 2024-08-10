@@ -79,7 +79,7 @@ namespace LinearProgrammingSolver
                             Console.ReadLine();
                             break;
                         case "12":
-                            PerformDuality(optimalSolution);
+                            PerformDuality(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "13":
@@ -701,10 +701,51 @@ namespace LinearProgrammingSolver
             }*/       
         }
 
-        private static void PerformDuality(double[,] tableau)
+        private static void PerformDuality(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to solve the Dual Programming Model
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");
+            double[,] b = Init(model, solutionTableau, "b");
 
+            double totalValue = 0;
+            for (int i = 0; i < b.GetLength(0); i++)
+            {
+                totalValue += b[i,0] * cbvb[0,i];
+            }
+            Console.WriteLine($"Total value of business: {totalValue}");
+
+            if (Math.Round(totalValue,3) == Math.Round(solutionTableau[0,solutionTableau.GetLength(1)-1], 3))
+            {
+                Console.WriteLine("Strong Duality is present");
+            }
+            else
+            {
+                Console.WriteLine("Weak Duality is present");
+            }
+
+            totalValue = 0;
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+            {
+                for (int i = 1; i < iTableau.GetLength(0); i++)
+                {
+                    totalValue += iTableau[i,j] * cbvb[0, i-1];
+                }
+                Console.WriteLine($"Total value of resource {j + 1}: {totalValue}");
+                totalValue = 0;
+            }
+
+            totalValue = 0;
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+            {
+                for (int i = 1; i < iTableau.GetLength(0); i++)
+                {
+                    totalValue = iTableau[i, j] * cbvb[0, i - 1];
+                    Console.WriteLine($"Value of constraint {i} in resource {j + 1}: {totalValue}");
+                }
+                
+                totalValue = 0;
+            }
         }
 
         private static double[,] Init(LinearProgrammingModel model, double[,] solutionTableau, string table)
