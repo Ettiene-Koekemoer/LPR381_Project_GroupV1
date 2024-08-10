@@ -55,7 +55,7 @@ namespace LinearProgrammingSolver
                             Console.ReadLine();
                             break;
                         case "6":
-                            ApplyConstraintRHSChange(optimalSolution);
+                            ApplyConstraintRHSChange(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "7":
@@ -300,10 +300,85 @@ namespace LinearProgrammingSolver
             // Implement the logic to display the range of a selected constraint right-hand-side value
         }
 
-        private static void ApplyConstraintRHSChange(double[,] solutionTableau)
+        private static void ApplyConstraintRHSChange(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to apply and display a change of a selected constraint right-hand-side value
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] b = Init(model, solutionTableau, "b");
+            Console.WriteLine("Select RHS value to change:");
+            for (int i = 1; i < iTableau.GetLength(0); i++)
+            {
+                Console.WriteLine($"{i}. {iTableau[i, iTableau.GetLength(1)-1]}");
+            }
+            var choice = Console.ReadLine();
+            int choiceIndex;
+            if (int.TryParse(choice, out choiceIndex)) { }
+            else
+            {
+                while (!(int.TryParse(choice, out choiceIndex)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choice = Console.ReadLine();
+                }
+            }
+            Console.WriteLine("Enter the new RHS value:");
+            var input = Console.ReadLine();
+            double value;
+            if (double.TryParse(input, out value)) { }
+            else
+            {
+                while (!(double.TryParse(input, out value)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid double value.");
+                    input = Console.ReadLine();
+                }
+            }
+            b[choiceIndex - 1, 0] = value;
 
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");            
+            double[,] bi = Init(model, solutionTableau, "b-");
+            double[,] newb = new double[b.GetLength(0), b.GetLength(1)];
+            newb = (MultiplyMatrices(bi, b));
+
+            for (int i = 0; i < b.GetLength(0); i++)
+            {
+                solutionTableau[i + 1,solutionTableau.GetLength(1) - 1] = newb[i, 0];
+            }
+
+            double[,] z = new double[1, 1];
+            z = MultiplyMatrices(cbvb, b);
+            solutionTableau[0, solutionTableau.GetLength(1) - 1] = z[0, 0];
+
+            while (true)
+            {
+                int pivotDualRow = SelectDualPivotRow(solutionTableau);
+                if (pivotDualRow == -1)
+                    break; // Optimal solution found
+                int pivotDualColumn = SelectDualPivotColumn(solutionTableau, pivotDualRow);
+                if (pivotDualColumn == -1)
+                {
+                    Console.WriteLine("Infeasible solution.");
+                    return;
+                }
+
+                Pivot(solutionTableau, pivotDualRow, pivotDualColumn);
+            }
+            while (true)
+            {
+                int pivotColumn = SelectPivotColumn(solutionTableau, model);
+                if (pivotColumn == -1)
+                    break; // Optimal solution found
+
+                int pivotRow = SelectPivotRow(solutionTableau, pivotColumn);
+                if (pivotRow == -1)
+                {
+                    Console.WriteLine("Unbounded solution.");
+                    return;
+                }
+
+                Pivot(solutionTableau, pivotRow, pivotColumn);
+            }
+            DisplayTableau(solutionTableau);
         }
 
         private static void DisplayNonBasicVariableColumnRange(double[,] solutionTableau)
@@ -314,6 +389,7 @@ namespace LinearProgrammingSolver
         private static void ApplyNonBasicVariableColumnChange(double[,] solutionTableau)
         {
             // Implement the logic to apply and display a change of a selected constraint right-hand-side value
+
         }
 
         private static void AddNewActivity(double[,] solutionTableau)
@@ -649,6 +725,40 @@ namespace LinearProgrammingSolver
             }
 
             return counts;
+        }
+
+        private static int SelectDualPivotRow(double[,] tableau)
+        {
+            int pivotRow = -1;
+            double minValue = 0;
+            for (int j = 1; j < tableau.GetLength(0); j++)
+            {
+                if (tableau[j, tableau.GetLength(1) - 1] < minValue)
+                {
+                    minValue = tableau[j, tableau.GetLength(1) - 1];
+                    pivotRow = j;
+                }
+            }
+            return pivotRow;
+        }
+
+        private static int SelectDualPivotColumn(double[,] tableau, int pivotRow)
+        {
+            int pivotColumn = -1;
+            double minRatio = double.PositiveInfinity;
+            for (int i = 0; i < tableau.GetLength(1) - 1; i++)
+            {
+                if (tableau[pivotRow, i] < 0)
+                {
+                    double ratio = Math.Abs(tableau[0, i] / tableau[pivotRow, i]);
+                    if (ratio < minRatio)
+                    {
+                        minRatio = ratio;
+                        pivotColumn = i;
+                    }
+                }
+            }
+            return pivotColumn;
         }
     }
 }
