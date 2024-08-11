@@ -6,9 +6,9 @@ namespace LinearProgrammingSolver
 {
     public static class RevisedSimplex
     {
-        public static (List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)? Solve(LinearProgrammingModel model, string outputPath)
+        public static (List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)? Solve(LinearProgrammingModel model)
         {
-            using (var writer = new StreamWriter(outputPath))
+            using (var writer = new StreamWriter("Output.txt"))
             {
                 writer.WriteLine("Solving using Revised Primal Simplex Algorithm...");
 

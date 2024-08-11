@@ -6,9 +6,9 @@ namespace LinearProgrammingSolver
 {
     public static class PrimalSimplex
     {
-        public static void Solve(LinearProgrammingModel model, string outputPath)
+        public static void Solve(LinearProgrammingModel model)
         {
-            using (var writer = new StreamWriter(outputPath))
+            using (var writer = new StreamWriter("Output.txt"))
             {
                 writer.WriteLine("Solving using Primal Simplex Algorithm...");
 
