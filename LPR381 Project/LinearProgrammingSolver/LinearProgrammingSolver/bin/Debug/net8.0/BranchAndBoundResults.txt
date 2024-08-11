@@ -1,0 +1,124 @@
+Variable Table:
+        x4      0,000          1
+        x3     12,000          2
+        x1     16,000          3
+        x2     22,000          4
+
+Iterations:
+Iteration:
+        x1          5    -11,000
+Iteration:
+        x1          1      9,000
+        x2          7    -40,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          4    -14,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
+Iteration:
+        x1          1      9,000
+        x2          1      2,000
+        x3          1     -2,000
