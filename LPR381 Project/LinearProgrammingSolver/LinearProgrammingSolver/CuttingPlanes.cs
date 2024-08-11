@@ -34,7 +34,7 @@ namespace LinearProgrammingSolver
                     Pivot(tableau, pivotDualRow, pivotDualColumn);
                 }
                 while (true)
-                {
+                {                   
                     int pivotColumn = SelectPivotColumn(tableau, model);
                     if (pivotColumn == -1)
                         break; // Optimal solution found
@@ -66,7 +66,8 @@ namespace LinearProgrammingSolver
 
                     Pivot(tableau, pivotRow, pivotColumn);
                 }
-            }            
+            }
+
             DisplayTableau(tableau);
             outputString.Append(BuildTable(tableau));
             
@@ -142,7 +143,7 @@ namespace LinearProgrammingSolver
                     DisplayTableau(tableau);                    
                     outputString.Append(BuildTable(tableau));
                 }
-            }
+            }            
             outputString.Append($"Optimal Solution: {tableau[0, tableau.GetLength(1) - 1]}");
             WriteOutput(outputString.ToString());
             SaveSolution(tableau, model);
