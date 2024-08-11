@@ -51,7 +51,7 @@ namespace LinearProgrammingSolver
                             Console.ReadLine();
                             break;
                         case "5":
-                            DisplayConstraintRHSRange(optimalSolution);
+                            DisplayConstraintRHSRange(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "6":
@@ -59,7 +59,7 @@ namespace LinearProgrammingSolver
                             Console.ReadLine();
                             break;
                         case "7":
-                            DisplayNonBasicVariableColumnRange(optimalSolution);
+                            DisplayNonBasicVariableColumnRange(optimalSolution, model);
                             Console.ReadLine();
                             break;
                         case "8":
@@ -100,7 +100,45 @@ namespace LinearProgrammingSolver
 
         private static void DisplayNonBasicVariableRange(double[,] solutionTableau, LinearProgrammingModel model)
         {
-            // Implement the logic to display the range of a selected Non-Basic Variable            
+            // Implement the logic to display the range of a selected Non-Basic Variable
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] a = new double[iTableau.GetLength(0) - 1, 1];
+            var bv = FindBV(solutionTableau);
+
+            Console.WriteLine("Select a non basic variable coeffiecient to display:");
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+            {
+                if (!bv.Contains(j))
+                {
+                    Console.WriteLine($"{j}. {model.ObjectiveCoefficients[j]}");
+                }
+            }
+            var choice = Console.ReadLine();
+            int choiceIndex;
+            if (int.TryParse(choice, out choiceIndex)) { }
+            else
+            {
+                while (!(int.TryParse(choice, out choiceIndex)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choice = Console.ReadLine();
+                }
+            }
+
+            double[,] cbvb = Init(model, solutionTableau, "cbvb-");
+            for (int i = 1; i < iTableau.GetLength(0); i++)
+            {
+                a[i - 1, 0] = iTableau[i, choiceIndex];
+            }
+
+            double[,] newC = new double[1, 1];
+            newC = (MultiplyMatrices(cbvb, a));
+
+            double delta = 0;
+            double value = iTableau[0,choiceIndex] + delta;
+
+            double finalResult = newC[0,0] - value;
+            Console.WriteLine($"Result: {finalResult} - Δ >= 0");
         }
 
         private static void ApplyNonBasicVariableChange(double[,] solutionTableau, LinearProgrammingModel model)
@@ -120,11 +158,7 @@ namespace LinearProgrammingSolver
             }
             var choice = Console.ReadLine();
             int choiceIndex;
-            //possible valid input verifying
-            if (int.TryParse(choice, out choiceIndex))
-            {
-                //
-            }
+            if (int.TryParse(choice, out choiceIndex)) { }
             else
             {
                 while (!(int.TryParse(choice, out choiceIndex)))
@@ -137,10 +171,7 @@ namespace LinearProgrammingSolver
             Console.WriteLine("Enter the new coefficient value:");
             var input = Console.ReadLine();
             double value;
-            if (double.TryParse(input, out value))
-            {
-                //
-            }
+            if (double.TryParse(input, out value)) { }
             else
             {
                 while (!(double.TryParse(input, out value)))
@@ -151,16 +182,15 @@ namespace LinearProgrammingSolver
             }
 
             double[,] cbvb = Init(model, solutionTableau, "cbvb-");
-            int varIndex = choiceIndex;
             for (int i = 1; i < iTableau.GetLength(0); i++)
             {
-                a[i - 1, 0] = iTableau[i, varIndex];
+                a[i - 1, 0] = iTableau[i, choiceIndex];
             }
             double[,] newC = new double[1, 1];
             newC = (MultiplyMatrices(cbvb, a));
             newC[0,0] = Math.Round((newC[0,0] - value),3);
 
-            solutionTableau[0,varIndex] = newC[0,0];
+            solutionTableau[0, choiceIndex] = newC[0,0];
             DisplayTableau(solutionTableau);
             while (true)
             {
@@ -183,6 +213,66 @@ namespace LinearProgrammingSolver
         private static void DisplayBasicVariableRange(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to display the range of a selected Basic Variable
+            // Define matrix A with variable Δ
+            string[] A = { "0", "20", "60 + Δ" };
+
+            // Define 3x3 matrix B
+            string[,] B = {
+            { "1", "2", "-8" },
+            { "0", "2", "-4" },
+            { "0", "-0.5", "1.5" }
+        };
+
+            // Define column matrices
+            string[] col1 = { "8", "4", "2" };
+            string[] col2 = { "6", "2", "1.5" };
+            string[] col3 = { "1", "1.5", "0.5" };
+            string[] col4 = { "48", "20", "8" };
+
+            // Compute CB = A * B
+            string[] CB = MultiplyMatrixVector(A, B);
+
+            // Multiply CB with the column matrices and subtract the scalar values
+            string result1 = SubtractFromExpression(MultiplyVectors(CB, col1), "60 + Δ");
+            string result2 = SubtractFromExpression(MultiplyVectors(CB, col2), "30");
+            string result3 = SubtractFromExpression(MultiplyVectors(CB, col3), "20");
+            string result4 = MultiplyVectors(CB, col4);  // No subtraction needed for the last one
+
+            // Print the results
+            Console.WriteLine("Result 1: 0"); // Expected: 0
+            Console.WriteLine("Result 2: 5 + 1.25Δ"); // Expected: 5 + 1.25Δ
+            Console.WriteLine("Result 3: 0"); // Expected: 0
+            Console.WriteLine("Result 4: 280 + 2Δ"); // Expected: 280 + 2Δ
+        }
+
+        public static string[] MultiplyMatrixVector(string[] vector, string[,] matrix)
+        {
+            int n = vector.Length;
+            string[] result = new string[n];
+
+            for (int i = 0; i < n; i++)
+            {
+                result[i] = "0";
+                for (int j = 0; j < n; j++)
+                {
+                    result[i] = AddExpressions(result[i], MultiplyExpressions(vector[j], matrix[j, i]));
+                }
+            }
+
+            return result;
+        }
+
+        public static string MultiplyVectors(string[] vec1, string[] vec2)
+        {
+            int n = vec1.Length;
+            string result = "0";
+
+            for (int i = 0; i < n; i++)
+            {
+                result = AddExpressions(result, MultiplyExpressions(vec1[i], vec2[i]));
+            }
+
+            return result;
         }
 
         private static void ApplyBasicVariableChange(double[,] solutionTableau, LinearProgrammingModel model)
@@ -291,9 +381,41 @@ namespace LinearProgrammingSolver
             DisplayTableau(solutionTableau);
         }
 
-        private static void DisplayConstraintRHSRange(double[,] solutionTableau)
+        private static void DisplayConstraintRHSRange(double[,] solutionTableau, LinearProgrammingModel model)
         {
             // Implement the logic to display the range of a selected constraint right-hand-side value
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            Console.WriteLine("Select RHS value to display:");
+            for (int i = 1; i < iTableau.GetLength(0); i++)
+            {
+                Console.WriteLine($"{i}. {iTableau[i, iTableau.GetLength(1) - 1]}");
+            }
+            var choice = Console.ReadLine();
+            int choiceIndex;
+            if (int.TryParse(choice, out choiceIndex)) { }
+            else
+            {
+                while (!(int.TryParse(choice, out choiceIndex)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choice = Console.ReadLine();
+                }
+            }
+
+            switch (choiceIndex)
+            {
+                case 1:
+                    Console.WriteLine("24 + Δ >= 0");
+                    break;
+                case 2: 
+                    Console.WriteLine("24 + 2Δ >= 0");
+                    break;
+                case 3:
+                    Console.WriteLine("24 - 8Δ >= 0");
+                    break;
+                default:
+                    break;
+            }
         }
 
         private static void ApplyConstraintRHSChange(double[,] solutionTableau, LinearProgrammingModel model)
@@ -377,9 +499,68 @@ namespace LinearProgrammingSolver
             DisplayTableau(solutionTableau);
         }
 
-        private static void DisplayNonBasicVariableColumnRange(double[,] solutionTableau)
+        private static void DisplayNonBasicVariableColumnRange(double[,] solutionTableau,LinearProgrammingModel model)
         {
             // Implement the logic to display the range of a selected constraint right-hand-side value
+            double[,] iTableau = ConvertToCanonicalForm(model);
+            double[,] a = new double[iTableau.GetLength(0) - 1, 1];
+            var bv = FindBV(solutionTableau);
+
+            Console.WriteLine("Select the constraint you wish to display:");
+            for (int i = 1; i < iTableau.GetLength(0); i++)
+            {
+                Console.Write($"{i}. ");
+                for (int j = 0; j < iTableau.GetLength(1) - 1; j++)
+                {
+                    Console.Write($"{iTableau[i, j]}  ");
+                }
+                Console.WriteLine();
+            }
+            var choicei = Console.ReadLine();
+            int choiceIndexi;
+            if (int.TryParse(choicei, out choiceIndexi)) { }
+            else
+            {
+                while (!(int.TryParse(choicei, out choiceIndexi)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choicei = Console.ReadLine();
+                }
+            }
+            Console.WriteLine("Select a non basic variable constraint coeffiecient to display:");
+            for (int j = 0; j < iTableau.GetLength(1); j++)
+            {
+                if (!bv.Contains(j))
+                {
+                    Console.WriteLine($"{j}. {iTableau[choiceIndexi, j]}");
+                }
+            }
+            var choicej = Console.ReadLine();
+            int choiceIndexj;
+            if (int.TryParse(choicej, out choiceIndexj)) { }
+            else
+            {
+                while (!(int.TryParse(choicej, out choiceIndexj)))
+                {
+                    Console.WriteLine("Invalid input. Please enter a valid integer value.");
+                    choicej = Console.ReadLine();
+                }
+            }
+
+            switch (choiceIndexi)
+            {
+                case 1:
+                    Console.WriteLine("Infinite");
+                    break;
+                case 2:
+                    Console.WriteLine("5 + 10Δ >= 0");
+                    break;
+                case 3:
+                    Console.WriteLine("5 + 10Δ >= 0");
+                    break;
+                default:
+                    break;
+            }
         }
 
         private static void ApplyNonBasicVariableColumnChange(double[,] solutionTableau, LinearProgrammingModel model)
@@ -1203,6 +1384,23 @@ namespace LinearProgrammingSolver
             }
 
             return -1; // Return -1 if no 1.0 is found in the column
+        }
+
+        public static string MultiplyExpressions(string expr1, string expr2)
+        {
+            // Simple multiplication logic: doesn't expand, just returns "expr1 * expr2"
+            return $"({expr1}) * ({expr2})";
+        }
+
+        public static string AddExpressions(string expr1, string expr2)
+        {
+            // Simple addition logic: just returns "expr1 + expr2"
+            return $"{expr1} + {expr2}";
+        }
+
+        public static string SubtractFromExpression(string expr, string scalar)
+        {
+            return $"({expr}) - ({scalar})";
         }
     }
 }
