@@ -197,7 +197,7 @@ namespace LinearProgrammingSolver
                     RevisedSimplex.Solve(model);
                     break;
                 case "3":
-                    BranchAndBoundSimplex.Solve(model);
+                    BranchAndBoundSimplex.RunBranchAndBoundAlgorithm();
                     break;
                 case "4":
                     CuttingPlane.Solve(model);
