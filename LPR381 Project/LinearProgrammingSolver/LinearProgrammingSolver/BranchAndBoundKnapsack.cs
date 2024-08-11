@@ -1,11 +1,14 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace LinearProgrammingSolver
 {
     public static class BranchAndBoundKnapsack
     {
         private static double[,] tableau;
-        private static int branchCount;
         private static List<List<(string Variable, int InOut, double Remainder)>> iterationResults = new List<List<(string Variable, int InOut, double Remainder)>>();
         private const int MaxIterations = 30; // Maximum number of iterations
 
@@ -21,37 +24,31 @@ namespace LinearProgrammingSolver
             List<(string Variable, int InOut, double Remainder)> bestSolution = null;
 
             var variableTable = CreateVariableTable(model);
-            var branches = new Queue<int>();
-            branches.Enqueue(0);
+            var branches = new Queue<List<(string Variable, int InOut, double Remainder)>>();
+            branches.Enqueue(SolveBranch(variableTable, model));
 
             Console.WriteLine("Starting branch processing...");
             int iterationCount = 0;
 
             while (branches.Count > 0 && iterationCount < MaxIterations)
             {
-                int currentBranch = branches.Dequeue();
-                Console.WriteLine($"Processing branch: {currentBranch}");
+                var currentTable = branches.Dequeue();
+                Console.WriteLine($"Processing branch with current table:");
 
-                var currentTable = SolveBranch(variableTable, model);
-                Console.WriteLine("Current table:");
                 PrintTable(currentTable);
 
                 iterationResults.Add(new List<(string Variable, int InOut, double Remainder)>(currentTable));
                 iterationCount++;
 
-                if (IsOptimalSolution(currentTable))
+                double currentObjectiveValue = CalculateObjectiveValue(currentTable, model);
+                if (currentObjectiveValue > bestObjectiveValue)
                 {
-                    double currentObjectiveValue = CalculateObjectiveValue(currentTable, model);
-                    Console.WriteLine($"Optimal solution found with objective value: {currentObjectiveValue}");
-
-                    if (currentObjectiveValue > bestObjectiveValue)
-                    {
-                        bestObjectiveValue = currentObjectiveValue;
-                        bestSolution = new List<(string Variable, int InOut, double Remainder)>(currentTable);
-                        Console.WriteLine("Best solution updated.");
-                    }
+                    bestObjectiveValue = currentObjectiveValue;
+                    bestSolution = new List<(string Variable, int InOut, double Remainder)>(currentTable);
+                    Console.WriteLine($"Best solution updated with objective value: {bestObjectiveValue}");
                 }
-                else
+
+                if (!IsOptimalSolution(currentTable))
                 {
                     var branchVariable = GetBranchVariable(currentTable);
                     if (branchVariable != null)
@@ -60,10 +57,11 @@ namespace LinearProgrammingSolver
                         var newBranches = CreateBranches(branchVariable, variableTable, model);
                         foreach (var newBranch in newBranches)
                         {
-                            if (!processedBranches.Contains(newBranch.ToString()))
+                            var branchKey = string.Join(",", newBranch.Select(x => $"{x.Variable},{x.InOut},{x.Remainder:F3}"));
+                            if (!processedBranches.Contains(branchKey))
                             {
                                 branches.Enqueue(newBranch);
-                                processedBranches.Add(newBranch.ToString());
+                                processedBranches.Add(branchKey);
                             }
                         }
                     }
@@ -78,7 +76,6 @@ namespace LinearProgrammingSolver
         {
             var variableTable = new List<(string Variable, double Ratio, int Rank)>();
 
-            // Calculate ratios and ranks
             int numVariables = model.cN.Length;
             for (int j = 0; j < numVariables; j++)
             {
@@ -89,10 +86,12 @@ namespace LinearProgrammingSolver
             // Rank variables based on ratio
             if (model.IsMaximization)
             {
+                // Sort in ascending order for maximization (highest ratio first)
                 variableTable = variableTable.OrderByDescending(v => v.Ratio).ToList();
             }
             else
             {
+                // Sort in descending order for minimization (lowest ratio first)
                 variableTable = variableTable.OrderBy(v => v.Ratio).ToList();
             }
 
@@ -158,32 +157,38 @@ namespace LinearProgrammingSolver
             return branchCandidate.Equals(default((string Variable, int InOut, double Remainder))) ? null : branchCandidate.Variable;
         }
 
-        private static List<int> CreateBranches(string branchVariable, List<(string Variable, double Ratio, int Rank)> variableTable, LinearProgrammingModel model)
+        private static List<List<(string Variable, int InOut, double Remainder)>> CreateBranches(string branchVariable, List<(string Variable, double Ratio, int Rank)> variableTable, LinearProgrammingModel model)
         {
-            var newBranches = new List<int>();
+            var newBranches = new List<List<(string Variable, int InOut, double Remainder)>>();
 
             // Branch 1: Exclude the variable (In/Out = 0)
             var branch1 = variableTable.Where(v => v.Variable != branchVariable).ToList();
             branch1.Insert(0, (branchVariable, 0, 0));
-            newBranches.Add(branchCount++);
+            newBranches.Add(SolveBranch(branch1, model));
 
             // Branch 2: Include the variable (In/Out = 1)
             var branch2 = variableTable.Where(v => v.Variable != branchVariable).ToList();
             branch2.Insert(0, (branchVariable, 1, 0));
-            newBranches.Add(branchCount++);
+            newBranches.Add(SolveBranch(branch2, model));
 
             return newBranches;
         }
 
-        private static void WriteResults(List<(string Variable, double Ratio, int Rank)> variableTable, List<(string Variable, int InOut, double Remainder)> bestSolution, double bestObjectiveValue)
+        private static void WriteResults(
+            List<(string Variable, double Ratio, int Rank)> variableTable, 
+            List<(string Variable, int InOut, double Remainder)> bestSolution, 
+            double bestObjectiveValue)
         {
             var output = new StringBuilder();
+            
+            // Variable Table
             output.AppendLine("Variable Table:");
             foreach (var entry in variableTable)
             {
                 output.AppendLine($"{entry.Variable,10} {entry.Ratio,10:F3} {entry.Rank,10}");
             }
 
+            // Iterations
             output.AppendLine("\nIterations:");
             foreach (var iteration in iterationResults)
             {
@@ -194,10 +199,27 @@ namespace LinearProgrammingSolver
                 }
             }
 
+            // Optimal Solution
+            output.AppendLine("\nOptimal Solution:");
+            if (bestSolution != null)
+            {
+                output.AppendLine("Variable Table for Optimal Solution:");
+                foreach (var entry in bestSolution)
+                {
+                    output.AppendLine($"{entry.Variable,10} {entry.InOut,10} {entry.Remainder,10:F3}");
+                }
+            }
+            else
+            {
+                output.AppendLine("No optimal solution found.");
+            }
+
+            // Best Objective Value
             output.AppendLine($"\nBest Objective Value: {bestObjectiveValue:F3}");
 
             File.WriteAllText("output.txt", output.ToString());
         }
+
 
         private static int GetVariableIndex(string variableName)
         {
