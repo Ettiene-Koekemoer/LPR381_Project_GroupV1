@@ -1,36 +1,36 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-// namespace LinearProgrammingSolver
-// {
-//     public static class SensitivityAnalysis
-//     {
-//         public static void Perform(LinearProgrammingModel model)
-//         {
-//             double[,] optimalSolution = model.Solution;
-//             if (optimalSolution != null)
-//             {
-//                 while (true)
-//                 {
-//                     Console.WriteLine();
-//                     Console.WriteLine("Select Sensitivity Analysis to perform:");
-//                     Console.WriteLine("1.  Display the range of a selected Non-Basic Variable");
-//                     Console.WriteLine("2.  Apply and display a change of a selected Non-Basic Variable");
-//                     Console.WriteLine("3.  Display the range of a selected Basic Variable");
-//                     Console.WriteLine("4.  Apply and display a change of a selected Basic Variable");
-//                     Console.WriteLine("5.  Display the range of a selected constraint right-hand-side value");
-//                     Console.WriteLine("6.  Apply and display a change of a selected constraint right-hand-side value");
-//                     Console.WriteLine("7.  Display the range of a selected variable in a Non-Basic Variable column");
-//                     Console.WriteLine("8.  Apply and display a change of a selected variable in a Non-Basic Variable column");
-//                     Console.WriteLine("9.  Add a new activity to an optimal solution");
-//                     Console.WriteLine("10. Add a new constraint to an optimal solution");
-//                     Console.WriteLine("11. Display the shadow prices");
-//                     Console.WriteLine("12. Duality");
-//                     Console.WriteLine("13. Exit");
+namespace LinearProgrammingSolver
+{
+    public static class SensitivityAnalysis
+    {
+        public static void Perform(LinearProgrammingModel model)
+        {
+            double[,] optimalSolution = model.Solution;
+            if (optimalSolution != null)
+            {
+                while (true)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Select Sensitivity Analysis to perform:");
+                    Console.WriteLine("1.  Display the range of a selected Non-Basic Variable");
+                    Console.WriteLine("2.  Apply and display a change of a selected Non-Basic Variable");
+                    Console.WriteLine("3.  Display the range of a selected Basic Variable");
+                    Console.WriteLine("4.  Apply and display a change of a selected Basic Variable");
+                    Console.WriteLine("5.  Display the range of a selected constraint right-hand-side value");
+                    Console.WriteLine("6.  Apply and display a change of a selected constraint right-hand-side value");
+                    Console.WriteLine("7.  Display the range of a selected variable in a Non-Basic Variable column");
+                    Console.WriteLine("8.  Apply and display a change of a selected variable in a Non-Basic Variable column");
+                    Console.WriteLine("9.  Add a new activity to an optimal solution");
+                    Console.WriteLine("10. Add a new constraint to an optimal solution");
+                    Console.WriteLine("11. Display the shadow prices");
+                    Console.WriteLine("12. Duality");
+                    Console.WriteLine("13. Exit");
 
-//                     var choice = Console.ReadLine();
+                    var choice = Console.ReadLine();
 
                     switch (choice)
                     {

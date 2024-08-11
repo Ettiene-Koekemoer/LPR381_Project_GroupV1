@@ -43,7 +43,7 @@ namespace LinearProgrammingSolver
             PerformBranchAndBound(objectiveFunction, constraints, variableTypes, output);
 
             // Write output to file
-            File.WriteAllLines("C:/Users/danil/OneDrive/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/LinearProgrammingSolver/LinearProgrammingSolver/Output.txt", output);
+            File.WriteAllLines("C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/Output.txt", output);
             Console.WriteLine("Branch and Bound iterations have been written to output.txt");
         }
 
