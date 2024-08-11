@@ -71,80 +71,88 @@ namespace LinearProgrammingSolver
         // Static method to read a knapsack problem from a file
         public static LinearProgrammingModel ReadKnapsackInput(string filePath)
         {
-            var lines = File.ReadAllLines(filePath);
-
-            // Read the objective function
-            var objectiveLine = lines[0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            var problemType = objectiveLine[0]; // "max" or "min"
-            var objectiveCoefficients = objectiveLine.Skip(1).Select(double.Parse).ToArray();
-            
-            bool isMaximization = problemType == "max";
-
-            // Read the constraints
-            var constraints = new List<double[]>();
-            var rhs = new List<double>();
-
-            foreach (var line in lines.Skip(1))
+            try
             {
-                var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                
-                // If the line starts with "x", it indicates the end of constraints
-                if (parts.Length > 0 && parts[0].StartsWith("x"))
+                var lines = File.ReadAllLines(filePath);
+                if (lines.Length == 0)
                 {
-                    // Last line with variable types
-                    var variables = parts.Take(parts.Length - 1).ToList();
-                    var variableType = parts.Last(); // Should be "bin"
-                    
-                    // Ensure binary constraints
-                    if (variableType != "bin")
-                    {
-                        throw new ArgumentException("Variable type must be binary for knapsack problems.");
-                    }
-                    
-                    // Create the variable list (not used directly here, but may be used later)
-                    var variableNames = variables;
+                    throw new InvalidOperationException("File is empty.");
                 }
-                else
-                {
-                    // Parse constraints
-                    var constraint = parts.Take(parts.Length - 2).Select(double.Parse).ToArray();
-                    var sign = parts[parts.Length - 2];
-                    var rhsValue = double.Parse(parts.Last());
 
+                // Read the objective function
+                var objectiveLine = lines[0].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (objectiveLine.Length < 2)
+                {
+                    throw new InvalidOperationException("Invalid objective function line.");
+                }
+
+                bool isMaximization = objectiveLine[0].ToLower() == "max";
+                var objectiveCoefficients = objectiveLine.Skip(1).Select(double.Parse).ToArray();
+
+                // Read the constraints
+                var constraints = new List<double[]>();
+                var rhs = new List<double>();
+
+                foreach (var line in lines.Skip(1))
+                {
+                    var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    // Handle variable type line
+                    if (parts.Length > 1 && parts.Last() == "bin")
+                    {
+                        // Extract variable names
+                        var variables = parts.Take(parts.Length - 1).ToList();
+                        // Optionally, store the variables if needed
+                        continue;
+                    }
+
+                    // Parse constraints
+                    if (parts.Length < 2)
+                    {
+                        throw new InvalidOperationException("Invalid constraint line.");
+                    }
+
+                    var rhsIndex = parts.Length - 2;
+                    var rhsValue = double.Parse(parts.Last());
+                    var constraint = parts.Take(rhsIndex).Select(double.Parse).ToArray();
                     constraints.Add(constraint);
                     rhs.Add(rhsValue);
                 }
-            }
 
-            // Create the A matrix and b vector
-            int numConstraints = constraints.Count;
-            int numVariables = objectiveCoefficients.Length;
-            var A = new double[numConstraints, numVariables];
-            var b = rhs.ToArray();
+                // Create the A matrix and b vector
+                int numConstraints = constraints.Count;
+                int numVariables = objectiveCoefficients.Length;
+                var A = new double[numConstraints, numVariables];
+                var b = rhs.ToArray();
 
-            for (int i = 0; i < numConstraints; i++)
-            {
-                for (int j = 0; j < numVariables; j++)
+                for (int i = 0; i < numConstraints; i++)
                 {
-                    A[i, j] = constraints[i][j];
+                    for (int j = 0; j < numVariables; j++)
+                    {
+                        A[i, j] = constraints[i][j];
+                    }
                 }
+
+                // Create List<int> for indices
+                var B = Enumerable.Range(0, numConstraints).ToList(); // Placeholder for indices of basic variables
+
+                // Create List<string> for N (variable names)
+                var N = new List<string>(); // This should be populated with variable names if needed
+
+                return new LinearProgrammingModel(
+                    B: B, // List<int> for indices
+                    N: N, // List<string> for names (variables)
+                    A: A,
+                    cB: objectiveCoefficients, // Assuming cB is the same as the objective coefficients
+                    cN: objectiveCoefficients, // Assuming cN is the same as the objective coefficients
+                    b: b
+                );
             }
-
-            // Create List<int> for indices
-            var B = Enumerable.Range(0, numConstraints).ToList(); // Placeholder for indices of basic variables
-
-            // Create List<string> for N (variable names)
-            var N = new List<string>(); // This should be populated with variable names
-
-            // Create the LinearProgrammingModel
-            return new LinearProgrammingModel(
-                B: B, // List<int> for indices
-                N: N, // List<string> for names (variables)
-                A: A,
-                cB: objectiveCoefficients, // Assuming cB is the same as the objective coefficients
-                cN: objectiveCoefficients, // Assuming cN is the same as the objective coefficients
-                b: b
-            );
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading file: {ex.Message}");
+                return null;
+            }
         }
 
         public void ParseInputFile(string filePath)
