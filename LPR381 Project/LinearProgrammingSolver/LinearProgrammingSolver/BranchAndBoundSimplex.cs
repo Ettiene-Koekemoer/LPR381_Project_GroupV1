@@ -11,7 +11,7 @@ namespace LinearProgrammingSolver
         {
             Console.WriteLine("Solving using Branch and Bound Simplex Algorithm...");
             // Read input file
-            string[] lines = File.ReadAllLines("C:/Users/danil/OneDrive/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/Models/branch&bound.txt");
+            string[] lines = File.ReadAllLines("C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/LinearProgrammingSolver/LinearProgrammingSolver/Models/branch&bound.txt");
 
             // Parse the input file
             string objectiveFunction = lines[0].Trim();

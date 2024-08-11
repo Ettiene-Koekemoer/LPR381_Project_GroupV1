@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = LinearProgrammingSolver
-build_property.ProjectDir = C:\Users\danil\OneDrive\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\
+build_property.ProjectDir = C:\Users\liamo\Documents\GitHub\LPR381_Project_GroupV1\LPR381 Project\LinearProgrammingSolver\LinearProgrammingSolver\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
