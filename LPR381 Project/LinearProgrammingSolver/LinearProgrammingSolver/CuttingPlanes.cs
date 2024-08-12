@@ -88,11 +88,11 @@ namespace LinearProgrammingSolver
                             {
                                 if (tableau[i, j] < 0)
                                 {
-                                    newConstraint[j] = -1 - tableau[i, j] % 1; //for negative values
+                                    newConstraint[j] = Math.Round(-1 - tableau[i, j] % 1,3); //for negative values
                                 }
                                 else
                                 {
-                                    newConstraint[j] = -(tableau[i, j] % 1); //for positive values
+                                    newConstraint[j] = Math.Round(-(tableau[i, j] % 1),3); //for positive values
                                 }
                             }
                             tableau = AddConstraint(tableau, newConstraint);
