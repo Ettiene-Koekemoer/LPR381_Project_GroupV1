@@ -1,133 +1,150 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Text;
 
 namespace LinearProgrammingSolver
 {
     public static class RevisedSimplex
     {
-        public static (List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)? Solve(LinearProgrammingModel model, string outputPath)
+        public static void Solve(LinearProgrammingModel model)
         {
-            using (var writer = new StreamWriter(outputPath))
+            StringBuilder outputString = new StringBuilder();
+            Console.WriteLine("Solving using Revised Simplex Algorithm...");
+
+            // Convert the model to the canonical form
+            var tableau = ConvertToCanonicalForm(model);
+            // Perform relaxed simplex iterations
+            if (model.ConstraintOperators.Contains(">=") || model.ConstraintOperators.Contains("="))
             {
-                writer.WriteLine("Solving using Revised Primal Simplex Algorithm...");
-
-                // Convert the model to the canonical form
-                var (B, N, A, cB, cN, b) = ConvertToCanonicalForm(model);
-                DisplayTableau(writer, B, N, A, cB, cN, b);
-
-                // Perform simplex iterations
+                Console.WriteLine("Primal Simplex not possible");
+            }
+            else
+            {
                 while (true)
                 {
-                    var (pivotColumn, d) = SelectPivotColumn(A, cB, cN, B, N);
+                    int pivotColumn = SelectPivotColumn(tableau, model);
                     if (pivotColumn == -1)
                         break; // Optimal solution found
 
-                    int pivotRow = SelectPivotRow(b, d);
+                    int pivotRow = SelectPivotRow(tableau, pivotColumn);
                     if (pivotRow == -1)
                     {
-                        writer.WriteLine("Unbounded solution.");
-                        return null;
+                        Console.WriteLine("Unbounded solution.");
+                        return;
                     }
 
-                    Pivot(ref B, ref N, ref A, ref cB, ref cN, ref b, pivotRow, pivotColumn, d);
-                    DisplayTableau(writer, B, N, A, cB, cN, b);
+                    Pivot(tableau, pivotRow, pivotColumn);
                 }
-
-                // Output the results
-                WriteOutput(writer, B, N, A, cB, cN, b);
-
-                return (B, N, A, cB, cN, b);
             }
+            var cbvb = Init(model, tableau, "cbvb-");
+            Console.WriteLine("Final CBVB-");
+            DisplayTableau(cbvb);
+            outputString.Append(BuildTable(cbvb));
+            var b = Init(model, tableau, "b-");
+            Console.WriteLine("Final B-");
+            DisplayTableau(b);
+            outputString.Append(BuildTable(b));
+            DisplayTableau(tableau);
+            outputString.Append(BuildTable(tableau));
+
+            outputString.Append($"Optimal Solution: {tableau[0, tableau.GetLength(1) - 1]}");
+            WriteOutput(outputString.ToString());
+            SaveSolution(tableau, model);
         }
 
-        public static (List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b) ConvertToCanonicalForm(LinearProgrammingModel model)
+        private static void DisplayTableau(double[,] tableau)
         {
-            int m = model.Constraints.Count;
-            int n = model.ObjectiveCoefficients.Count;
-
-            var B = new List<int>();
-            var N = new List<int>();
-            var A = new double[m, n + m];
-            var cB = new double[m];
-            var cN = new double[n];
-            var b = new double[m];
-
-            for (int i = 0; i < n; i++)
+            for (int i = 0; i < tableau.GetLength(0); i++)
             {
-                N.Add(i);
-                cN[i] = model.IsMaximization ? model.ObjectiveCoefficients[i] : -model.ObjectiveCoefficients[i];
-            }
-
-            for (int i = 0; i < m; i++)
-            {
-                B.Add(n + i);
-                A[i, n + i] = 1;
-                b[i] = model.RightHandSides[i];
-            }
-
-            for (int i = 0; i < m; i++)
-            {
-                for (int j = 0; j < n; j++)
+                for (int j = 0; j < tableau.GetLength(1); j++)
                 {
-                    A[i, j] = model.Constraints[i][j];
+                    Console.Write($"{tableau[i, j],10:F3}");
                 }
+                Console.WriteLine();
             }
-
-            return (B, N, A, cB, cN, b);
+            Console.WriteLine();
         }
 
-        private static (int pivotColumn, double[] d) SelectPivotColumn(double[,] A, double[] cB, double[] cN, List<int> B, List<int> N)
+        private static void WriteOutput(string output)
         {
-            int m = B.Count;
-            int n = N.Count;
-            double[] u = new double[m];
-            double[] d = new double[m];
-            double[] reducedCosts = new double[n];
-            int pivotColumn = -1;
-
-            for (int i = 0; i < m; i++)
+            string outputFilePath = "revised_output.txt";
+            using (var writer = new System.IO.StreamWriter(outputFilePath))
             {
-                u[i] = 0;
-                for (int j = 0; j < m; j++)
-                {
-                    u[i] += cB[j] * A[j, B[i]];
-                }
+                writer.WriteLine("Canonical Form and Simplex Iterations:");
+                writer.WriteLine(output);
             }
+            Console.WriteLine($"Results written to {outputFilePath}");
+        }
+        private static double[,] ConvertToCanonicalForm(LinearProgrammingModel model)
+        {
+            int rows = model.Constraints.Count + 1;
+            int columns = model.ObjectiveCoefficients.Count + model.Constraints.Count + 1;
+            double[,] tableau = new double[rows, columns];
 
-            for (int j = 0; j < n; j++)
+            // Objective function
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+                tableau[0, j] = -model.ObjectiveCoefficients[j];
+
+            // Constraints
+            for (int i = 0; i < model.Constraints.Count; i++)
             {
-                reducedCosts[j] = cN[j];
-                for (int i = 0; i < m; i++)
-                {
-                    reducedCosts[j] -= u[i] * A[i, N[j]];
-                }
-
-                if (reducedCosts[j] < 0)
-                {
-                    pivotColumn = j;
-                    for (int i = 0; i < m; i++)
+                for (int j = 0; j < model.Constraints[i].Count; j++)
+                    if (model.ConstraintOperators[i] == "<=")
                     {
-                        d[i] = A[i, N[pivotColumn]];
+                        tableau[i + 1, j] = model.Constraints[i][j];
+                        tableau[i + 1, model.ObjectiveCoefficients.Count + i] = 1; // Slack variable
+                        tableau[i + 1, columns - 1] = model.RightHandSides[i];
                     }
-                    break;
-                }
+                    else
+                    {
+                        tableau[i + 1, j] = -model.Constraints[i][j];
+                        tableau[i + 1, model.ObjectiveCoefficients.Count + i] = 1; // Excess variable
+                        tableau[i + 1, columns - 1] = -model.RightHandSides[i];
+                    }
             }
 
-            return (pivotColumn, d);
+            return tableau;
         }
 
-        private static int SelectPivotRow(double[] b, double[] d)
+        private static int SelectPivotColumn(double[,] tableau, LinearProgrammingModel model)
         {
-            int m = b.Length;
+            int pivotColumn = -1;
+            if (model.IsMaximization)
+            {
+                double minValue = 0;
+                for (int j = 0; j < tableau.GetLength(1) - 1; j++)
+                {
+                    if (tableau[0, j] < minValue)
+                    {
+                        minValue = tableau[0, j];
+                        pivotColumn = j;
+                    }
+                }
+            }
+            else
+            {
+                double maxValue = 0;
+                for (int j = 0; j < tableau.GetLength(1) - 1; j++)
+                {
+                    if (tableau[0, j] > maxValue)
+                    {
+                        maxValue = tableau[0, j];
+                        pivotColumn = j;
+                    }
+                }
+            }
+            return pivotColumn;
+        }
+
+        private static int SelectPivotRow(double[,] tableau, int pivotColumn)
+        {
             int pivotRow = -1;
             double minRatio = double.PositiveInfinity;
-
-            for (int i = 0; i < m; i++)
+            for (int i = 1; i < tableau.GetLength(0); i++)
             {
-                if (d[i] > 0)
+                if (tableau[i, pivotColumn] > 0)
                 {
-                    double ratio = b[i] / d[i];
+                    double ratio = tableau[i, tableau.GetLength(1) - 1] / tableau[i, pivotColumn];
                     if (ratio < minRatio)
                     {
                         minRatio = ratio;
@@ -135,82 +152,292 @@ namespace LinearProgrammingSolver
                     }
                 }
             }
-
             return pivotRow;
         }
 
-        private static void Pivot(ref List<int> B, ref List<int> N, ref double[,] A, ref double[] cB, ref double[] cN, ref double[] b, int pivotRow, int pivotColumn, double[] d)
+        private static void Pivot(double[,] tableau, int pivotRow, int pivotColumn)
         {
-            int m = B.Count;
-            int n = N.Count;
-            int enteringVariable = N[pivotColumn];
-            int leavingVariable = B[pivotRow];
+            double pivotValue = tableau[pivotRow, pivotColumn];
+            for (int j = 0; j < tableau.GetLength(1); j++)
+                tableau[pivotRow, j] /= pivotValue;
 
-            double pivotValue = d[pivotRow];
-
-            for (int j = 0; j < n; j++)
-            {
-                A[pivotRow, N[j]] /= pivotValue;
-            }
-            b[pivotRow] /= pivotValue;
-
-            for (int i = 0; i < m; i++)
+            for (int i = 0; i < tableau.GetLength(0); i++)
             {
                 if (i != pivotRow)
                 {
-                    double factor = d[i];
-                    for (int j = 0; j < n; j++)
+                    double factor = tableau[i, pivotColumn];
+                    for (int j = 0; j < tableau.GetLength(1); j++)
+                        tableau[i, j] -= factor * tableau[pivotRow, j];
+                }
+            }
+        }
+
+        static string BuildTable(double[,] table)
+        {
+            StringBuilder tableBuilder = new StringBuilder();
+            tableBuilder.AppendLine("");
+
+            int rows = table.GetLength(0);
+            int cols = table.GetLength(1);
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    tableBuilder.Append($"{table[i, j],10:F3}");
+                }
+                tableBuilder.AppendLine();
+            }
+            tableBuilder.AppendLine();
+            return tableBuilder.ToString();
+        }
+
+        private static void SaveSolution(double[,] optimalTableau, LinearProgrammingModel model)
+        {
+            int rows = optimalTableau.GetLength(0);
+            int columns = optimalTableau.GetLength(1);
+
+            model.SolutionRows = rows;
+            model.SolutionColumns = columns;
+            model.Solution = optimalTableau;
+        }
+
+        public static List<int> FindBV(double[,] matrix)
+        {
+            List<(int columnIndex, int rowIndex)> columnRowPairs = new List<(int, int)>();
+
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            for (int j = 0; j < cols; j++)
+            {
+                int oneCount = 0;
+                int rowIndex = -1;
+
+                for (int i = 0; i < rows; i++)
+                {
+                    if (matrix[i, j] == 1.000)
                     {
-                        A[i, N[j]] -= factor * A[pivotRow, N[j]];
+                        oneCount++;
+                        rowIndex = i;
                     }
-                    b[i] -= factor * b[pivotRow];
+                    else if (matrix[i, j] != 0.000)
+                    {
+                        oneCount = -1; // Column contains non-zero values other than 1
+                        break;
+                    }
+                }
+
+                if (oneCount == 1)
+                {
+                    columnRowPairs.Add((j, rowIndex)); // Save the column index along with the row index
                 }
             }
 
-            N[pivotColumn] = leavingVariable;
-            B[pivotRow] = enteringVariable;
-            cB[pivotRow] = cN[pivotColumn];
+            // Sort the list based on rowIndex to prioritize earlier rows
+            columnRowPairs.Sort((a, b) => a.rowIndex.CompareTo(b.rowIndex));
+
+            // Extract the column indexes from the sorted list
+            List<int> sortedColumnIndexes = new List<int>();
+            foreach (var pair in columnRowPairs)
+            {
+                sortedColumnIndexes.Add(pair.columnIndex);
+            }
+
+            return sortedColumnIndexes;
         }
 
-        private static void DisplayTableau(StreamWriter writer, List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        private static double[,] ConvertToCanonicalFormRevised(LinearProgrammingModel model)
         {
-            int m = B.Count;
-            int n = N.Count;
+            int rows = model.Constraints.Count + 1;
+            int columns = model.ObjectiveCoefficients.Count + model.Constraints.Count + 1;
+            double[,] tableau = new double[rows, columns];
 
-            writer.WriteLine("B: " + string.Join(", ", B));
-            writer.WriteLine("N: " + string.Join(", ", N));
-            writer.WriteLine("A:");
-            for (int i = 0; i < m; i++)
+            // Objective function
+            for (int j = 0; j < model.ObjectiveCoefficients.Count; j++)
+                tableau[0, j] = -model.ObjectiveCoefficients[j];
+
+            // Constraints
+            for (int i = 0; i < model.Constraints.Count; i++)
+            {
+                for (int j = 0; j < model.Constraints[i].Count; j++)
+                    if (model.ConstraintOperators[i] == "<=")
+                    {
+                        tableau[i + 1, j] = model.Constraints[i][j];
+                        tableau[i + 1, model.ObjectiveCoefficients.Count + i] = 1; // Slack variable
+                        tableau[i + 1, columns - 1] = model.RightHandSides[i];
+                    }
+                    else
+                    {
+                        tableau[i + 1, j] = -model.Constraints[i][j];
+                        tableau[i + 1, model.ObjectiveCoefficients.Count + i] = 1; // Excess variable
+                        tableau[i + 1, columns - 1] = -model.RightHandSides[i];
+                    }
+            }
+
+            return tableau;
+        }
+
+        private static double[,] Init(LinearProgrammingModel model, double[,] solutionTableau, string table)
+        {
+            double[,] initOutput;
+            List<int> bv = new List<int>();
+            var iTable = ConvertToCanonicalForm(model);
+            bv = FindBV(solutionTableau);
+            double[,] cbv = new double[1, bv.Count];
+            double[,] b = new double[iTable.GetLength(0) - 1, bv.Count];
+            double[,] rhsb = new double[iTable.GetLength(0) - 1, 1];
+
+            for (int k = 0; k < bv.Count; k++)
+            {
+                int colIndex = bv[k];
+
+                // Store the value at row 0, matched column index
+                cbv[0, k] = Math.Round(iTable[0, colIndex],3);
+
+                // Store the values below row 0 for the matched column index
+                for (int i = 1; i < iTable.GetLength(0); i++)
+                {
+                    b[i - 1, k] = Math.Round(iTable[i, colIndex],3);
+                }
+            }
+            b = InvertMatrix(b);
+            switch (table)
+            {
+                case "cbvb-":
+                    initOutput = MultiplyMatrices(cbv, b);
+                    return initOutput;
+                case "b-":
+                    initOutput = b;
+                    return initOutput;
+                case "b":
+                    int rhsIndex = iTable.GetLength(1) - 1;
+                    for (int i = 1; i < iTable.GetLength(0); i++)
+                    {
+                        rhsb[i - 1, 0] = iTable[i, rhsIndex];
+                    }
+                    initOutput = rhsb;
+                    return initOutput;
+                case "bb":
+                    initOutput = b;
+                    return initOutput;
+                default:
+                    initOutput = solutionTableau;
+                    return initOutput;
+            }
+        }
+
+        static double[,] MultiplyMatrices(double[,] matrixA, double[,] matrixB)
+        {
+            int rowsA = matrixA.GetLength(0);
+            int colsA = matrixA.GetLength(1);
+            int rowsB = matrixB.GetLength(0);
+            int colsB = matrixB.GetLength(1);
+
+            // Check if the matrices can be multiplied
+            if (colsA != rowsB)
+            {
+                throw new InvalidOperationException("The number of columns in Matrix A must be equal to the number of rows in Matrix B.");
+            }
+
+            // Initialize the result matrix
+            double[,] result = new double[rowsA, colsB];
+
+            // Multiply the matrices
+            for (int i = 0; i < rowsA; i++)
+            {
+                for (int j = 0; j < colsB; j++)
+                {
+                    for (int k = 0; k < colsA; k++)
+                    {
+                        result[i, j] += matrixA[i, k] * matrixB[k, j];
+                    }
+                }
+            }
+
+            for (int i = 0; i < result.GetLength(0); i++)
+            {
+                for (int j = 0; j < result.GetLength(1); j++)
+                {
+                    result[i, j] = Math.Round(result[i, j], 3);
+                }
+            }
+
+            return result;
+        }
+        static double[,] InvertMatrix(double[,] matrix)
+        {
+            int n = matrix.GetLength(0);
+            double[,] result = new double[n, n];
+            double[,] augmentedMatrix = new double[n, 2 * n];
+
+            // Create the augmented matrix [matrix | I]
+            for (int i = 0; i < n; i++)
             {
                 for (int j = 0; j < n; j++)
                 {
-                    writer.Write($"{A[i, N[j]],10:F3} ");
+                    augmentedMatrix[i, j] = matrix[i, j];
                 }
-                writer.WriteLine();
+                augmentedMatrix[i, i + n] = 1;
             }
-            writer.WriteLine("cB: " + string.Join(", ", cB));
-            writer.WriteLine("cN: " + string.Join(", ", cN));
-            writer.WriteLine("b: " + string.Join(", ", b));
-            writer.WriteLine();
+
+            // Perform Gaussian elimination
+            for (int i = 0; i < n; i++)
+            {
+                // Make the diagonal contain all 1's
+                double diag = augmentedMatrix[i, i];
+                if (diag == 0)
+                {
+                    //throw new InvalidOperationException("Matrix is singular and cannot be inverted.");
+                }
+                for (int j = 0; j < 2 * n; j++)
+                {
+                    augmentedMatrix[i, j] /= diag;
+                }
+
+                // Make all rows below this one 0 in the current column
+                for (int k = 0; k < n; k++)
+                {
+                    if (k != i)
+                    {
+                        double factor = augmentedMatrix[k, i];
+                        for (int j = 0; j < 2 * n; j++)
+                        {
+                            augmentedMatrix[k, j] -= factor * augmentedMatrix[i, j];
+                        }
+                    }
+                }
+            }
+
+            // Extract the inverse matrix from the augmented matrix
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    result[i, j] = augmentedMatrix[i, j + n];
+                }
+            }
+
+            return result;
         }
 
-        private static void WriteOutput(StreamWriter writer, List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+        public static int FindMaxIndexInFirstRow(double[,] array)
         {
-            writer.WriteLine("Revised Primal Simplex Algorithm Output:");
-            writer.WriteLine("B: " + string.Join(", ", B));
-            writer.WriteLine("N: " + string.Join(", ", N));
-            writer.WriteLine("A:");
-            for (int i = 0; i < B.Count; i++)
+            int columns = array.GetLength(1);  // Number of columns in the array
+            int maxIndex = 0; // Assume the first element is the maximum initially
+            double maxValue = array[0, 0]; // Start with the first value in the first row
+
+            // Loop through the first row to find the maximum value
+            for (int i = 1; i < columns; i++)
             {
-                for (int j = 0; j < N.Count; j++)
+                if (array[0, i] > maxValue)
                 {
-                    writer.Write($"{A[i, N[j]],10:F3} ");
+                    maxValue = array[0, i];
+                    maxIndex = i; // Update the index of the maximum value
                 }
-                writer.WriteLine();
             }
-            writer.WriteLine("cB: " + string.Join(", ", cB));
-            writer.WriteLine("cN: " + string.Join(", ", cN));
-            writer.WriteLine("b: " + string.Join(", ", b));
+
+            return maxIndex; // Return the index of the largest value
         }
     }
 }

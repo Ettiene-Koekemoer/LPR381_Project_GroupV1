@@ -1,161 +1,246 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace LinearProgrammingSolver
 {
     public static class BranchAndBoundKnapsack
     {
+        private static double[,] tableau;
+        private static List<List<(string Variable, int InOut, double Remainder)>> iterationResults = new List<List<(string Variable, int InOut, double Remainder)>>();
+        private const int MaxIterations = 30; // Maximum number of iterations
+
+        private static HashSet<string> processedBranches = new HashSet<string>(); // To track processed branches
+
         public static void Solve(LinearProgrammingModel model)
         {
-            Console.WriteLine("Solving using Branch and Bound Knapsack Algorithm...");
+            int rows = 3;
+            int columns = model.cN.Length;
+            tableau = new double[rows, columns];
 
-            // Initial LP relaxation
-            var result = RevisedSimplex.Solve(model);
-            if (result == null)
+            double bestObjectiveValue = double.NegativeInfinity;
+            List<(string Variable, int InOut, double Remainder)> bestSolution = null;
+
+            var variableTable = CreateVariableTable(model);
+            var branches = new Queue<List<(string Variable, int InOut, double Remainder)>>();
+            branches.Enqueue(SolveBranch(variableTable, model));
+
+            Console.WriteLine("Starting branch processing...");
+            int iterationCount = 0;
+
+            while (branches.Count > 0 && iterationCount < MaxIterations)
             {
-                Console.WriteLine("Infeasible initial relaxation.");
-                return;
+                var currentTable = branches.Dequeue();
+                Console.WriteLine($"Processing branch with current table:");
+
+                PrintTable(currentTable);
+
+                iterationResults.Add(new List<(string Variable, int InOut, double Remainder)>(currentTable));
+                iterationCount++;
+
+                double currentObjectiveValue = CalculateObjectiveValue(currentTable, model);
+                if (currentObjectiveValue > bestObjectiveValue)
+                {
+                    bestObjectiveValue = currentObjectiveValue;
+                    bestSolution = new List<(string Variable, int InOut, double Remainder)>(currentTable);
+                    Console.WriteLine($"Best solution updated with objective value: {bestObjectiveValue}");
+                }
+
+                if (!IsOptimalSolution(currentTable))
+                {
+                    var branchVariable = GetBranchVariable(currentTable);
+                    if (branchVariable != null)
+                    {
+                        Console.WriteLine($"Branching on variable: {branchVariable}");
+                        var newBranches = CreateBranches(branchVariable, variableTable, model);
+                        foreach (var newBranch in newBranches)
+                        {
+                            var branchKey = string.Join(",", newBranch.Select(x => $"{x.Variable},{x.InOut},{x.Remainder:F3}"));
+                            if (!processedBranches.Contains(branchKey))
+                            {
+                                branches.Enqueue(newBranch);
+                                processedBranches.Add(branchKey);
+                            }
+                        }
+                    }
+                }
             }
 
-            var (B, N, A, cB, cN, b) = result.Value;
-            var nodes = new List<Node> { new Node(B, N, A, cB, cN, b) };
-            double bestValue = double.NegativeInfinity;
-            Node bestNode = null;
+            Console.WriteLine("Branch processing complete or iteration limit reached.");
+            WriteResults(variableTable, bestSolution, bestObjectiveValue);
+        }
 
-            while (nodes.Count > 0)
+        private static List<(string Variable, double Ratio, int Rank)> CreateVariableTable(LinearProgrammingModel model)
+        {
+            var variableTable = new List<(string Variable, double Ratio, int Rank)>();
+
+            int numVariables = model.cN.Length;
+            for (int j = 0; j < numVariables; j++)
             {
-                var currentNode = nodes[0];
-                nodes.RemoveAt(0);
+                double ratio = model.cN[j] / (model.A[0, j] == 0 ? 1 : model.A[0, j]); // Avoid division by zero
+                variableTable.Add(($"x{j + 1}", ratio, 0));
+            }
 
-                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel()); // Assuming Solve method returns a similar tuple for sub-problems
-                if (currentResult == null)
-                    continue;
+            // Rank variables based on ratio
+            if (model.IsMaximization)
+            {
+                // Sort in ascending order for maximization (highest ratio first)
+                variableTable = variableTable.OrderByDescending(v => v.Ratio).ToList();
+            }
+            else
+            {
+                // Sort in descending order for minimization (lowest ratio first)
+                variableTable = variableTable.OrderBy(v => v.Ratio).ToList();
+            }
 
-                if (IsIntegerSolution(currentResult.Value.b))
+            // Assign ranks
+            for (int i = 0; i < variableTable.Count; i++)
+            {
+                variableTable[i] = (variableTable[i].Variable, variableTable[i].Ratio, i + 1);
+            }
+
+            Console.WriteLine("Variable Table:");
+            PrintVariableTable(variableTable);
+
+            return variableTable;
+        }
+
+        private static List<(string Variable, int InOut, double Remainder)> SolveBranch(List<(string Variable, double Ratio, int Rank)> variableTable, LinearProgrammingModel model)
+        {
+            var tableList = new List<(string Variable, int InOut, double Remainder)>();
+            double remainder = model.b[0];
+
+            foreach (var variable in variableTable)
+            {
+                int variableIndex = GetVariableIndex(variable.Variable);
+                int inOutValue = 1; // Initially, try to add the variable to the knapsack
+
+                remainder -= model.A[0, variableIndex] * inOutValue;
+                if (remainder >= 0)
                 {
-                    if (currentResult.Value.cB[currentResult.Value.cB.Length - 1] > bestValue)
-                    {
-                        bestValue = currentResult.Value.cB[currentResult.Value.cB.Length - 1];
-                        bestNode = currentNode;
-                    }
+                    tableList.Add((variable.Variable, inOutValue, remainder));
                 }
                 else
                 {
-                    var (leftNode, rightNode) = Branch(currentNode);
-                    nodes.Add(leftNode);
-                    nodes.Add(rightNode);
-                }
-            }
-
-            WriteOutput(bestNode);
-        }
-
-        private static bool IsIntegerSolution(double[] solution)
-        {
-            foreach (var value in solution)
-            {
-                if (Math.Abs(value - Math.Round(value)) > 1e-6)
-                    return false;
-            }
-            return true;
-        }
-
-        private static (Node leftNode, Node rightNode) Branch(Node node)
-        {
-            // Implement the branching logic to create left and right nodes
-            int branchIndex = -1;
-            double fractionalValue = 0;
-
-            for (int i = 0; i < node.b.Length; i++)
-            {
-                double value = node.b[i];
-                if (Math.Abs(value - Math.Round(value)) > 1e-6)
-                {
-                    branchIndex = i;
-                    fractionalValue = value;
+                    // This is the branching point
+                    tableList.Add((variable.Variable, 0, remainder));
                     break;
                 }
             }
 
-            if (branchIndex == -1)
-                throw new Exception("No fractional value found for branching.");
-
-            var leftNode = new Node(node.B, node.N, node.A, node.cB, node.cN, node.b);
-            var rightNode = new Node(node.B, node.N, node.A, node.cB, node.cN, node.b);
-
-            // Add constraints to left and right nodes
-            AddBranchingConstraint(leftNode, branchIndex, Math.Floor(fractionalValue), "<=");
-            AddBranchingConstraint(rightNode, branchIndex, Math.Ceiling(fractionalValue), ">=");
-
-            return (leftNode, rightNode);
+            return tableList;
         }
 
-        private static void AddBranchingConstraint(Node node, int index, double value, string operation)
+        private static bool IsOptimalSolution(List<(string Variable, int InOut, double Remainder)> table)
         {
-            int newConstraintIndex = node.b.Length;
-            double[,] newA = new double[node.A.GetLength(0) + 1, node.A.GetLength(1)];
-            double[] newb = new double[node.b.Length + 1];
+            return table.All(v => v.Remainder >= 0);
+        }
 
-            for (int i = 0; i < node.A.GetLength(0); i++)
+        private static double CalculateObjectiveValue(List<(string Variable, int InOut, double Remainder)> table, LinearProgrammingModel model)
+        {
+            double objectiveValue = 0.0;
+            // Compute objective value
+            foreach (var entry in table)
             {
-                for (int j = 0; j < node.A.GetLength(1); j++)
+                int variableIndex = GetVariableIndex(entry.Variable);
+                objectiveValue += model.cN[variableIndex] * entry.InOut;
+            }
+
+            return objectiveValue;
+        }
+
+        private static string GetBranchVariable(List<(string Variable, int InOut, double Remainder)> table)
+        {
+            var branchCandidate = table.FirstOrDefault(v => v.Remainder < 0);
+            return branchCandidate.Equals(default((string Variable, int InOut, double Remainder))) ? null : branchCandidate.Variable;
+        }
+
+        private static List<List<(string Variable, int InOut, double Remainder)>> CreateBranches(string branchVariable, List<(string Variable, double Ratio, int Rank)> variableTable, LinearProgrammingModel model)
+        {
+            var newBranches = new List<List<(string Variable, int InOut, double Remainder)>>();
+
+            // Branch 1: Exclude the variable (In/Out = 0)
+            var branch1 = variableTable.Where(v => v.Variable != branchVariable).ToList();
+            branch1.Insert(0, (branchVariable, 0, 0));
+            newBranches.Add(SolveBranch(branch1, model));
+
+            // Branch 2: Include the variable (In/Out = 1)
+            var branch2 = variableTable.Where(v => v.Variable != branchVariable).ToList();
+            branch2.Insert(0, (branchVariable, 1, 0));
+            newBranches.Add(SolveBranch(branch2, model));
+
+            return newBranches;
+        }
+
+        private static void WriteResults(
+            List<(string Variable, double Ratio, int Rank)> variableTable, 
+            List<(string Variable, int InOut, double Remainder)> bestSolution, 
+            double bestObjectiveValue)
+        {
+            var output = new StringBuilder();
+            
+            // Variable Table
+            output.AppendLine("Variable Table:");
+            foreach (var entry in variableTable)
+            {
+                output.AppendLine($"{entry.Variable,10} {entry.Ratio,10:F3} {entry.Rank,10}");
+            }
+
+            // Iterations
+            output.AppendLine("\nIterations:");
+            foreach (var iteration in iterationResults)
+            {
+                output.AppendLine("Iteration:");
+                foreach (var entry in iteration)
                 {
-                    newA[i, j] = node.A[i, j];
+                    output.AppendLine($"{entry.Variable,10} {entry.InOut,10} {entry.Remainder,10:F3}");
                 }
             }
 
-            for (int i = 0; i < node.b.Length; i++)
+            // Optimal Solution
+            output.AppendLine("\nOptimal Solution:");
+            if (bestSolution != null)
             {
-                newb[i] = node.b[i];
+                output.AppendLine("Variable Table for Optimal Solution:");
+                foreach (var entry in bestSolution)
+                {
+                    output.AppendLine($"{entry.Variable,10} {entry.InOut,10} {entry.Remainder,10:F3}");
+                }
+            }
+            else
+            {
+                output.AppendLine("No optimal solution found.");
             }
 
-            if (operation == "<=")
-            {
-                newA[newConstraintIndex, index] = 1;
-                newb[newConstraintIndex] = value;
-            }
-            else if (operation == ">=")
-            {
-                newA[newConstraintIndex, index] = -1;
-                newb[newConstraintIndex] = -value;
-            }
+            // Best Objective Value
+            output.AppendLine($"\nBest Objective Value: {bestObjectiveValue:F3}");
 
-            node.A = newA;
-            node.b = newb;
+            File.WriteAllText("output.txt", output.ToString());
         }
 
-        private static void DisplayTableau(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+
+        private static int GetVariableIndex(string variableName)
         {
-            // Implement tableau display logic
+            return int.Parse(variableName.Substring(1)) - 1;
         }
 
-        private static void WriteOutput(Node bestNode)
+        private static void PrintTable(List<(string Variable, int InOut, double Remainder)> table)
         {
-            string outputFilePath = "output_knapsack.txt";
-            using (var writer = new System.IO.StreamWriter(outputFilePath))
+            Console.WriteLine($"{"Variable",10} {"In/Out",10} {"Remainder",10}");
+            foreach (var entry in table)
             {
-                // Write the best node's tableau and objective value
+                Console.WriteLine($"{entry.Variable,10} {entry.InOut,10} {entry.Remainder,10:F3}");
             }
-            Console.WriteLine($"Results written to {outputFilePath}");
         }
 
-        private class Node
+        private static void PrintVariableTable(List<(string Variable, double Ratio, int Rank)> table)
         {
-            public List<int> B { get; }
-            public List<int> N { get; }
-            public double[,] A { get; set; }
-            public double[] cB { get; set; }
-            public double[] cN { get; set; }
-            public double[] b { get; set; }
-
-            public Node(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
+            Console.WriteLine($"{"Variable",10} {"Ratio",10} {"Rank",10}");
+            foreach (var entry in table)
             {
-                this.B = new List<int>(B);
-                this.N = new List<int>(N);
-                this.A = A.Clone() as double[,];
-                this.cB = (double[])cB.Clone();
-                this.cN = (double[])cN.Clone();
-                this.b = (double[])b.Clone();
+                Console.WriteLine($"{entry.Variable,10} {entry.Ratio,10:F3} {entry.Rank,10}");
             }
         }
     }

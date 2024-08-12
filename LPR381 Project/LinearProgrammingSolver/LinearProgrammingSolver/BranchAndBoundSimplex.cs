@@ -1,162 +1,212 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace LinearProgrammingSolver
 {
     public static class BranchAndBoundSimplex
     {
-        public static void Solve(LinearProgrammingModel model)
+       public static void RunBranchAndBoundAlgorithm()
         {
             Console.WriteLine("Solving using Branch and Bound Simplex Algorithm...");
+            // Read input file
+            string[] lines = File.ReadAllLines("C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/LPR381 Project/LinearProgrammingSolver/LinearProgrammingSolver/Models/branch&bound.txt");
 
-            // Initial LP relaxation
-            var result = RevisedSimplex.Solve(model);
-            if (result == null)
+            // Parse the input file
+            string objectiveFunction = lines[0].Trim();
+            string[] constraints = new string[lines.Length - 2];
+            for (int i = 1; i < lines.Length - 1; i++)
             {
-                Console.WriteLine("Infeasible initial relaxation.");
-                return;
+                constraints[i - 1] = lines[i].Trim();
+            }
+            string[] variableTypes = lines[lines.Length - 1].Trim().Split(' ');
+
+            // Process the linear programming problem
+            List<string> output = new List<string>();
+            output.Add("Objective Function:");
+            output.Add(objectiveFunction);
+            output.Add("Constraints:");
+            foreach (var constraint in constraints)
+            {
+                output.Add(constraint);
+            }
+            output.Add("Variable Types:");
+            foreach (var varType in variableTypes)
+            {
+                output.Add(varType);
             }
 
-            var (B, N, A, cB, cN, b) = result.Value;
-            var nodes = new List<Node> { new Node(B, N, A, cB, cN, b) };
-            double bestValue = double.NegativeInfinity;
-            Node bestNode = null;
+            // Branch and Bound Algorithm (simplified example)
+            output.Add("\nBranch and Bound Iterations:");
+
+            PerformBranchAndBound(objectiveFunction, constraints, variableTypes, output);
+
+            // Write output to file
+            File.WriteAllLines("C:/Users/liamo/Documents/GitHub/LPR381_Project_GroupV1/Output.txt", output);
+            Console.WriteLine("Branch and Bound iterations have been written to output.txt");
+        }
+
+        static void PerformBranchAndBound(string objectiveFunction, string[] constraints, string[] variableTypes, List<string> output)
+        {
+            // Initialize the problem (simplified example)
+            int[] bestSolution = null;
+            int bestValue = int.MinValue;
+
+            // Initial node
+            Queue<Node> nodes = new Queue<Node>();
+            nodes.Enqueue(new Node { Level = 0, Solution = new int[variableTypes.Length], Value = 0, Path = "0" });
+
+            Dictionary<int, List<Node>> levelNodes = new Dictionary<int, List<Node>>();
 
             while (nodes.Count > 0)
             {
-                var currentNode = nodes[0];
-                nodes.RemoveAt(0);
+                Node currentNode = nodes.Dequeue();
+                bool isFeasible = CheckFeasibility(currentNode.Solution, constraints);
 
-                var currentResult = RevisedSimplex.Solve(new LinearProgrammingModel()); // Assuming Solve method returns a similar tuple for sub-problems
-                if (currentResult == null)
-                    continue;
-
-                if (IsIntegerSolution(currentResult.Value.b))
+                if (!levelNodes.ContainsKey(currentNode.Level))
                 {
-                    if (currentResult.Value.cB[currentResult.Value.cB.Length - 1] > bestValue)
+                    levelNodes[currentNode.Level] = new List<Node>();
+                }
+
+                levelNodes[currentNode.Level].Add(currentNode);
+
+                if (currentNode.Level == variableTypes.Length)
+                {
+                    // All variables assigned, check solution
+                    if (isFeasible)
                     {
-                        bestValue = currentResult.Value.cB[currentResult.Value.cB.Length - 1];
-                        bestNode = currentNode;
+                        int currentValue = EvaluateSolution(currentNode.Solution, objectiveFunction);
+                        if (currentValue > bestValue)
+                        {
+                            bestValue = currentValue;
+                            bestSolution = currentNode.Solution;
+                        }
                     }
                 }
                 else
                 {
-                    var (leftNode, rightNode) = Branch(currentNode);
-                    nodes.Add(leftNode);
-                    nodes.Add(rightNode);
+                    // Branch on the next variable
+                    int level = currentNode.Level;
+                    int[] solution0 = (int[])currentNode.Solution.Clone();
+                    int[] solution1 = (int[])currentNode.Solution.Clone();
+                    solution0[level] = 0;
+                    solution1[level] = 1;
+
+                    nodes.Enqueue(new Node { Level = level + 1, Solution = solution0, Value = EvaluateSolution(solution0, objectiveFunction), Path = $"{currentNode.Path}.1" });
+                    nodes.Enqueue(new Node { Level = level + 1, Solution = solution1, Value = EvaluateSolution(solution1, objectiveFunction), Path = $"{currentNode.Path}.2" });
                 }
             }
 
-            WriteOutput(bestNode);
+            foreach (var level in levelNodes.Keys)
+            {
+                output.Add($"\nLevel {level}:");
+                var nodeList = levelNodes[level];
+                var subProblemDescriptions = new List<string>();
+
+                foreach (var node in nodeList)
+                {
+                    string subProblem = CreateSubProblemDescription(node.Solution, node.Value, node.Path);
+                    subProblemDescriptions.Add(subProblem);
+                }
+
+                // Merge descriptions horizontally with proper spacing
+                MergeAndAddDescriptions(output, subProblemDescriptions);
+            }
+
+            output.Add($"\nBest Solution: {string.Join(" ", bestSolution)}, Value: {bestValue}");
         }
 
-        private static bool IsIntegerSolution(double[] solution)
+        static bool CheckFeasibility(int[] solution, string[] constraints)
         {
-            foreach (var value in solution)
+            foreach (var constraint in constraints)
             {
-                if (Math.Abs(value - Math.Round(value)) > 1e-6)
-                    return false;
+                string[] parts = constraint.Split(' ');
+                int sum = 0;
+                int index = 0;
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (int.TryParse(parts[i], out int coefficient))
+                    {
+                        sum += coefficient * solution[index++];
+                    }
+                    else if (parts[i] == "<=")
+                    {
+                        int rhs = int.Parse(parts[i + 1]);
+                        if (sum > rhs) return false;
+                        break;
+                    }
+                }
             }
             return true;
         }
 
-        private static (Node leftNode, Node rightNode) Branch(Node node)
+        static int EvaluateSolution(int[] solution, string objectiveFunction)
         {
-            // Implement the branching logic to create left and right nodes
-            int branchIndex = -1;
-            double fractionalValue = 0;
-
-            for (int i = 0; i < node.b.Length; i++)
+            // Simplified evaluation based on the objective function
+            int value = 0;
+            string[] parts = objectiveFunction.Split(' ');
+            for (int i = 1; i < parts.Length; i++)
             {
-                double value = node.b[i];
-                if (Math.Abs(value - Math.Round(value)) > 1e-6)
+                int coefficient = int.Parse(parts[i]);
+                value += coefficient * solution[i - 1];
+            }
+            return value;
+        }
+
+        static string CreateSubProblemDescription(int[] solution, int value, string path)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"Subproblem {(path.Length > 2 ? path.Substring(2) : path)}\n");
+            sb.Append("| x1 | x2 | x3 | x4 | x5 | x6 |  z  |\n");
+            sb.Append("| " + string.Join(" | ", solution) + $" | {value} |\n");
+            return sb.ToString();
+        }
+
+        static void MergeAndAddDescriptions(List<string> output, List<string> descriptions)
+        {
+            var lines = new List<string[]>();
+            int maxLines = 0;
+
+            // Calculate the maximum width for each column
+            int[] columnWidths = new int[descriptions.Count];
+            for (int i = 0; i < descriptions.Count; i++)
+            {
+                var splitDesc = descriptions[i].Split('\n');
+                lines.Add(splitDesc);
+                for (int j = 0; j < splitDesc.Length; j++)
                 {
-                    branchIndex = i;
-                    fractionalValue = value;
-                    break;
+                    columnWidths[i] = Math.Max(columnWidths[i], splitDesc[j].Length);
                 }
+                maxLines = Math.Max(maxLines, splitDesc.Length);
             }
 
-            if (branchIndex == -1)
-                throw new Exception("No fractional value found for branching.");
-
-            var leftNode = new Node(node.B, node.N, node.A, node.cB, node.cN, node.b);
-            var rightNode = new Node(node.B, node.N, node.A, node.cB, node.cN, node.b);
-
-            // Add constraints to left and right nodes
-            AddBranchingConstraint(leftNode, branchIndex, Math.Floor(fractionalValue), "<=");
-            AddBranchingConstraint(rightNode, branchIndex, Math.Ceiling(fractionalValue), ">=");
-
-            return (leftNode, rightNode);
-        }
-
-        private static void AddBranchingConstraint(Node node, int index, double value, string operation)
-        {
-            int newConstraintIndex = node.b.Length;
-            double[,] newA = new double[node.A.GetLength(0) + 1, node.A.GetLength(1)];
-            double[] newb = new double[node.b.Length + 1];
-
-            for (int i = 0; i < node.A.GetLength(0); i++)
+            // Adjust output with proper spacing
+            for (int i = 0; i < maxLines; i++)
             {
-                for (int j = 0; j < node.A.GetLength(1); j++)
+                var lineParts = new List<string>();
+                for (int j = 0; j < lines.Count; j++)
                 {
-                    newA[i, j] = node.A[i, j];
+                    if (i < lines[j].Length)
+                    {
+                        lineParts.Add(lines[j][i].PadRight(columnWidths[j] + 4)); // Adding 4 spaces for padding between columns
+                    }
+                    else
+                    {
+                        lineParts.Add(new string(' ', columnWidths[j] + 4));
+                    }
                 }
-            }
-
-            for (int i = 0; i < node.b.Length; i++)
-            {
-                newb[i] = node.b[i];
-            }
-
-            if (operation == "<=")
-            {
-                newA[newConstraintIndex, index] = 1;
-                newb[newConstraintIndex] = value;
-            }
-            else if (operation == ">=")
-            {
-                newA[newConstraintIndex, index] = -1;
-                newb[newConstraintIndex] = -value;
-            }
-
-            node.A = newA;
-            node.b = newb;
-        }
-
-        private static void DisplayTableau(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-        {
-            // Implement tableau display logic
-        }
-
-        private static void WriteOutput(Node bestNode)
-        {
-            string outputFilePath = "output_branch_and_bound.txt";
-            using (var writer = new System.IO.StreamWriter(outputFilePath))
-            {
-                // Write the best node's tableau and objective value
-            }
-            Console.WriteLine($"Results written to {outputFilePath}");
-        }
-
-        private class Node
-        {
-            public List<int> B { get; }
-            public List<int> N { get; }
-            public double[,] A { get; set; }
-            public double[] cB { get; set; }
-            public double[] cN { get; set; }
-            public double[] b { get; set; }
-
-            public Node(List<int> B, List<int> N, double[,] A, double[] cB, double[] cN, double[] b)
-            {
-                this.B = new List<int>(B);
-                this.N = new List<int>(N);
-                this.A = A.Clone() as double[,];
-                this.cB = (double[])cB.Clone();
-                this.cN = (double[])cN.Clone();
-                this.b = (double[])b.Clone();
+                output.Add(string.Join("", lineParts));
             }
         }
     }
+
+    class Node
+    {
+        public int Level { get; set; }
+        public int[] Solution { get; set; }
+        public int Value { get; set; }
+        public string Path { get; set; }
+    }
+    
 }

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace LinearProgrammingSolver
 {
@@ -51,27 +54,64 @@ namespace LinearProgrammingSolver
 
         static LinearProgrammingModel LoadModel()
         {
-            Console.WriteLine("Enter the path to the input file:");
-            var filePath = Console.ReadLine();
+            string basePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Models");
+            basePath = Path.GetFullPath(basePath); // Resolve relative path to absolute
 
             try
             {
-                if (System.IO.File.Exists(filePath))
+                var files = Directory.GetFiles(basePath, "*.txt");
+                if (files.Length == 0)
                 {
-                    var model = new LinearProgrammingModel();
-                    model.ParseInputFile(filePath);
-                    Console.WriteLine("Model loaded successfully.");
-                    return model;
+                    Console.WriteLine("No model files found in the directory.");
+                    return null;
+                }
+                
+                Console.WriteLine();
+                Console.WriteLine("Please select one of the available models:");
+                for (int i = 0; i < files.Length; i++)
+                {
+                    Console.WriteLine($"{i + 1}. {Path.GetFileName(files[i])}");
+                }
+                
+                Console.WriteLine();
+                Console.WriteLine("Enter the number of the model you want to load:");
+                
+                if (int.TryParse(Console.ReadLine(), out int fileIndex) && fileIndex > 0 && fileIndex <= files.Length)
+                {
+                    var filePath = files[fileIndex - 1];
+                    
+                    if (filePath.ToLower().Contains("knapsack"))
+                    {
+                        //Alternative parsing route for when working with Knapsack BnB
+                        var model = LinearProgrammingModel.ReadKnapsackInput(filePath);
+                        if (model != null)
+                        {
+                            Console.WriteLine("Knapsack model loaded successfully.");
+                            return model;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Failed to read Knapsack model. Please check the file format.");
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        var model = new LinearProgrammingModel();
+                        model.ParseInputFile(filePath);
+                        Console.WriteLine("Model loaded successfully.");
+                        return model;
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("File not found. Please check the path and try again.");
+                    Console.WriteLine("Invalid selection. Please try again.");
                     return null;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading file: {ex.Message}");
+                Console.WriteLine($"Error accessing directory: {ex.Message}");
                 return null;
             }
         }
@@ -89,14 +129,14 @@ namespace LinearProgrammingSolver
 
             switch (choice)
             {
-                case "1":
+                case "1":                                        
                     PrimalSimplex.Solve(model);
                     break;
                 case "2":
                     RevisedSimplex.Solve(model);
                     break;
                 case "3":
-                    BranchAndBoundSimplex.Solve(model);
+                    BranchAndBoundSimplex.RunBranchAndBoundAlgorithm(); //This is a joke... it doen't even use the loaded modal...
                     break;
                 case "4":
                     CuttingPlane.Solve(model);
